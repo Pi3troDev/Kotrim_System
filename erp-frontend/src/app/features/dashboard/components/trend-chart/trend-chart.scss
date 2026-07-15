@@ -1,0 +1,206 @@
+.trend-chart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  height: 100%;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  &__subtitle {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+  }
+
+  &__legend {
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  &__legend-key {
+    width: 12px;
+    height: 2px;
+    border-radius: 2px;
+
+    &--revenue {
+      background: var(--chart-1);
+    }
+
+    &--expenses {
+      background: var(--chart-8);
+    }
+  }
+
+  &__canvas {
+    position: relative;
+  }
+
+  &__svg {
+    width: 100%;
+    height: 240px;
+    display: block;
+    overflow: visible;
+  }
+
+  &__gridline {
+    stroke: var(--chart-grid);
+    stroke-width: 1;
+  }
+
+  &__tick-label {
+    fill: var(--text-tertiary);
+    font-size: 10.5px;
+    text-anchor: start;
+  }
+
+  &__month-label {
+    fill: var(--text-tertiary);
+    font-size: 11px;
+    text-anchor: middle;
+  }
+
+  &__area {
+    &--revenue {
+      fill: var(--chart-1);
+      opacity: 0.1;
+    }
+  }
+
+  &__line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    &--revenue {
+      stroke: var(--chart-1);
+    }
+
+    &--expenses {
+      stroke: var(--chart-8);
+    }
+  }
+
+  &__dot {
+    stroke: var(--surface);
+    stroke-width: 2;
+
+    &--revenue {
+      fill: var(--chart-1);
+    }
+
+    &--expenses {
+      fill: var(--chart-8);
+    }
+  }
+
+  &__crosshair {
+    stroke: var(--border-strong);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  &__empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 0 40px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+  }
+
+  &__tooltip {
+    position: absolute;
+    top: 8px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 168px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 10px 12px;
+    pointer-events: none;
+    z-index: 1;
+
+    &[style*='--tooltip-align: left'] {
+      transform: translateX(0);
+    }
+
+    &[style*='--tooltip-align: right'] {
+      transform: translateX(-100%);
+    }
+  }
+
+  &__tooltip-month {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+  }
+
+  &__tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+
+    strong {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__tooltip-key {
+    width: 8px;
+    height: 2px;
+    border-radius: 2px;
+    flex-shrink: 0;
+
+    &--revenue {
+      background: var(--chart-1);
+    }
+
+    &--expenses {
+      background: var(--chart-8);
+    }
+  }
+
+  &__tooltip-label {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    margin-left: auto;
+  }
+}

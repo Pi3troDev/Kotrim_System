@@ -1,0 +1,81 @@
+<div class="trend-chart">
+  <div class="trend-chart__header">
+    <div>
+      <h3 class="trend-chart__title">Faturamento vs. Despesas</h3>
+      <p class="trend-chart__subtitle">Últimos 6 meses</p>
+    </div>
+    <div class="trend-chart__legend">
+      <span class="trend-chart__legend-item">
+        <span class="trend-chart__legend-key trend-chart__legend-key--revenue"></span>
+        Faturamento
+      </span>
+      <span class="trend-chart__legend-item">
+        <span class="trend-chart__legend-key trend-chart__legend-key--expenses"></span>
+        Despesas
+      </span>
+    </div>
+  </div>
+
+  <div class="trend-chart__canvas">
+    <svg
+      class="trend-chart__svg"
+      [attr.viewBox]="viewBox"
+      preserveAspectRatio="none"
+      (pointermove)="onPointerMove($event)"
+      (pointerleave)="onPointerLeave()"
+    >
+      @for (tick of yTicks(); track tick) {
+        <line
+          class="trend-chart__gridline"
+          x1="0"
+          [attr.x2]="640"
+          [attr.y1]="plotBottom - (tick / (maxValue() || 1)) * (plotBottom - plotTop)"
+          [attr.y2]="plotBottom - (tick / (maxValue() || 1)) * (plotBottom - plotTop)"
+        />
+        <text
+          class="trend-chart__tick-label"
+          x="0"
+          [attr.y]="plotBottom - (tick / (maxValue() || 1)) * (plotBottom - plotTop) - 4"
+        >
+          {{ formatCompact(tick) }}
+        </text>
+      }
+
+      <path class="trend-chart__area trend-chart__area--revenue" [attr.d]="revenueAreaPath()" />
+      <path class="trend-chart__line trend-chart__line--revenue" [attr.d]="revenuePath()" />
+      <path class="trend-chart__line trend-chart__line--expenses" [attr.d]="expensesPath()" />
+
+      @for (p of points(); track p.point.month) {
+        <circle class="trend-chart__dot trend-chart__dot--revenue" [attr.cx]="p.x" [attr.cy]="p.revenueY" r="4" />
+        <circle class="trend-chart__dot trend-chart__dot--expenses" [attr.cx]="p.x" [attr.cy]="p.expensesY" r="4" />
+        <text class="trend-chart__month-label" [attr.x]="p.x" [attr.y]="plotBottom + 20">
+          {{ p.point.label }}
+        </text>
+      }
+
+      @if (hovered(); as h) {
+        <line class="trend-chart__crosshair" [attr.x1]="h.x" [attr.x2]="h.x" [attr.y1]="plotTop" [attr.y2]="plotBottom" />
+      }
+    </svg>
+
+    @if (!hasData()) {
+      <div class="trend-chart__empty">Sem movimentações financeiras registradas neste período.</div>
+    }
+
+    @if (hovered(); as h) {
+      <div class="trend-chart__tooltip" [style]="tooltipStyle()">
+        <span class="trend-chart__tooltip-month">{{ h.point.label }}</span>
+        <span class="trend-chart__tooltip-row">
+          <span class="trend-chart__tooltip-key trend-chart__tooltip-key--revenue"></span>
+          <strong>{{ formatCurrency(h.point.revenue) }}</strong>
+          <span class="trend-chart__tooltip-label">Faturamento</span>
+        </span>
+        <span class="trend-chart__tooltip-row">
+          <span class="trend-chart__tooltip-key trend-chart__tooltip-key--expenses"></span>
+          <strong>{{ formatCurrency(h.point.expenses) }}</strong>
+          <span class="trend-chart__tooltip-label">Despesas</span>
+        </span>
+      </div>
+    }
+  </div>
+</div>

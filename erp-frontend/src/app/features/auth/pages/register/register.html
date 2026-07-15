@@ -1,0 +1,53 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-brand__mark">K</span>
+      <span class="auth-brand__name">Kotrim System</span>
+    </div>
+
+    <h1 class="auth-title">Cadastre sua oficina</h1>
+    <p class="auth-subtitle">Crie a conta administradora da sua empresa.</p>
+
+    <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Nome da oficina</mat-label>
+        <input matInput formControlName="companyName" autocomplete="organization" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>CNPJ/CPF</mat-label>
+        <input matInput formControlName="companyDocument" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Seu nome</mat-label>
+        <input matInput formControlName="adminName" autocomplete="name" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput type="email" formControlName="adminEmail" autocomplete="email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Senha</mat-label>
+        <input matInput type="password" formControlName="adminPassword" autocomplete="new-password" />
+        @if (form.controls.adminPassword.hasError('minlength')) {
+          <mat-error>Mínimo de 8 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="auth-submit" type="submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          Criar conta
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Já tem conta? <a routerLink="/auth/login">Entrar</a>
+    </p>
+  </div>
+</div>

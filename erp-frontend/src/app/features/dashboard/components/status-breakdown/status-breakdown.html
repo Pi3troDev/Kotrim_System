@@ -1,0 +1,26 @@
+<div class="status-breakdown">
+  <div class="status-breakdown__header">
+    <h3 class="status-breakdown__title">Ordens de Serviço por status</h3>
+    <p class="status-breakdown__subtitle">{{ total() }} no total</p>
+  </div>
+
+  @if (total() === 0) {
+    <div class="status-breakdown__empty">Nenhuma ordem de serviço cadastrada ainda.</div>
+  } @else {
+    <div class="status-breakdown__rows">
+      @for (row of rows(); track row.status) {
+        <div class="status-breakdown__row">
+          <span class="status-breakdown__label">{{ row.label }}</span>
+          <div class="status-breakdown__track">
+            <div
+              class="status-breakdown__bar"
+              [style.width.%]="row.widthPercent"
+              [style.background]="'var(' + row.colorVar + ')'"
+            ></div>
+          </div>
+          <span class="status-breakdown__count">{{ row.count }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

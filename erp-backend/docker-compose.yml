@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kotrim-erp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kotrim
+      POSTGRES_PASSWORD: kotrim
+      POSTGRES_DB: kotrim_erp
+    ports:
+      - '5432:5432'
+    volumes:
+      - kotrim_erp_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  kotrim_erp_postgres_data:

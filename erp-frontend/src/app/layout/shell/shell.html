@@ -1,0 +1,23 @@
+<div class="shell">
+  <div class="shell__desktop-sidebar">
+    <app-sidebar />
+  </div>
+
+  <mat-sidenav-container class="shell__container">
+    <mat-sidenav
+      class="shell__sidenav"
+      [mode]="'over'"
+      [opened]="isMobileMenuOpen()"
+      (openedChange)="onSidenavOpenedChange($event)"
+    >
+      <app-sidebar (click)="closeMobileMenu()" />
+    </mat-sidenav>
+
+    <mat-sidenav-content class="shell__content">
+      <app-topbar (menuToggle)="toggleMobileMenu()" />
+      <main class="shell__main">
+        <router-outlet />
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

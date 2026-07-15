@@ -1,0 +1,39 @@
+<header class="topbar">
+  <button
+    mat-icon-button
+    class="topbar__menu-btn"
+    type="button"
+    (click)="menuToggle.emit()"
+    aria-label="Abrir menu"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <div class="topbar__spacer"></div>
+
+  <button mat-icon-button type="button" (click)="toggleTheme()" aria-label="Alternar tema">
+    <mat-icon>{{ themeService.mode() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+
+  <button mat-icon-button type="button" aria-label="Notificações">
+    <mat-icon>notifications_none</mat-icon>
+  </button>
+
+  <button mat-button class="topbar__user" [matMenuTriggerFor]="userMenu" type="button">
+    <span class="topbar__avatar">{{ initials() }}</span>
+    <span class="topbar__user-name">{{ currentUser()?.name }}</span>
+    <mat-icon class="topbar__chevron">expand_more</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu" xPosition="before">
+    <div class="topbar__menu-header">
+      <span class="topbar__menu-name">{{ currentUser()?.name }}</span>
+      <span class="topbar__menu-email">{{ currentUser()?.email }}</span>
+    </div>
+    <mat-divider />
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Sair</span>
+    </button>
+  </mat-menu>
+</header>

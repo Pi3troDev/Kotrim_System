@@ -1,0 +1,21 @@
+<nav class="sidebar">
+  <div class="sidebar__brand">
+    <span class="sidebar__brand-mark">K</span>
+    <span class="sidebar__brand-name">Kotrim System</span>
+  </div>
+
+  <div class="sidebar__nav">
+    @for (item of navItems; track item.route) {
+      <a
+        class="sidebar__link"
+        [routerLink]="item.route"
+        routerLinkActive="sidebar__link--active"
+        matRipple
+        [matRippleColor]="'rgba(0,0,0,0.04)'"
+      >
+        <mat-icon class="sidebar__icon">{{ item.icon }}</mat-icon>
+        <span class="sidebar__label">{{ item.label }}</span>
+      </a>
+    }
+  </div>
+</nav>
