@@ -53,6 +53,12 @@ enum AccountType {
   OTHER
 }
 
+enum RecurrenceFrequency {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
 enum StockMovementType {
   IN
   OUT
@@ -464,23 +470,26 @@ model StockMovement {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Expense {
-  id                 String          @id @default(uuid()) @db.Uuid
-  companyId          String          @db.Uuid
-  categoryId         String?         @db.Uuid
-  accountId          String?         @db.Uuid
-  description        String
-  amount             Decimal         @db.Decimal(12, 2)
-  paidAmount         Decimal         @default(0) @db.Decimal(12, 2)
-  status             FinancialStatus @default(PENDING)
-  paymentMethod      String?
-  dueDate            DateTime
-  paidAt             DateTime?
-  installmentGroupId String?         @db.Uuid
-  installmentNumber  Int?
-  installmentTotal   Int?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  deletedAt          DateTime?
+  id                  String               @id @default(uuid()) @db.Uuid
+  companyId           String               @db.Uuid
+  categoryId          String?              @db.Uuid
+  accountId           String?              @db.Uuid
+  description         String
+  amount              Decimal              @db.Decimal(12, 2)
+  paidAmount          Decimal              @default(0) @db.Decimal(12, 2)
+  status              FinancialStatus      @default(PENDING)
+  paymentMethod       String?
+  dueDate             DateTime
+  paidAt              DateTime?
+  installmentGroupId  String?              @db.Uuid
+  installmentNumber   Int?
+  installmentTotal    Int?
+  recurrenceFrequency RecurrenceFrequency?
+  recurringGroupId    String?              @db.Uuid
+  recurrenceEndDate   DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
 
   company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id])
@@ -492,28 +501,32 @@ model Expense {
   @@index([dueDate])
   @@index([deletedAt])
   @@index([installmentGroupId])
+  @@index([recurringGroupId])
 }
 
 model Income {
-  id                 String          @id @default(uuid()) @db.Uuid
-  companyId          String          @db.Uuid
-  categoryId         String?         @db.Uuid
-  clientId           String?         @db.Uuid
-  workOrderId        String?         @db.Uuid
-  accountId          String?         @db.Uuid
-  description        String
-  amount             Decimal         @db.Decimal(12, 2)
-  paidAmount         Decimal         @default(0) @db.Decimal(12, 2)
-  status             FinancialStatus @default(PENDING)
-  paymentMethod      String?
-  dueDate            DateTime
-  receivedAt         DateTime?
-  installmentGroupId String?         @db.Uuid
-  installmentNumber  Int?
-  installmentTotal   Int?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  deletedAt          DateTime?
+  id                  String               @id @default(uuid()) @db.Uuid
+  companyId           String               @db.Uuid
+  categoryId          String?              @db.Uuid
+  clientId            String?              @db.Uuid
+  workOrderId         String?              @db.Uuid
+  accountId           String?              @db.Uuid
+  description         String
+  amount              Decimal              @db.Decimal(12, 2)
+  paidAmount          Decimal              @default(0) @db.Decimal(12, 2)
+  status              FinancialStatus      @default(PENDING)
+  paymentMethod       String?
+  dueDate             DateTime
+  receivedAt          DateTime?
+  installmentGroupId  String?              @db.Uuid
+  installmentNumber   Int?
+  installmentTotal    Int?
+  recurrenceFrequency RecurrenceFrequency?
+  recurringGroupId    String?              @db.Uuid
+  recurrenceEndDate   DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
 
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   category  Category?  @relation(fields: [categoryId], references: [id])
@@ -527,6 +540,7 @@ model Income {
   @@index([dueDate])
   @@index([deletedAt])
   @@index([installmentGroupId])
+  @@index([recurringGroupId])
 }
 
 // Bank/cash/digital-wallet registers a company tracks balances against.

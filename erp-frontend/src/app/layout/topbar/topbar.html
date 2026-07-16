@@ -15,9 +15,48 @@
     <mat-icon>{{ themeService.mode() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
   </button>
 
-  <button mat-icon-button type="button" aria-label="Notificações">
-    <mat-icon>notifications_none</mat-icon>
+  <button
+    mat-icon-button
+    type="button"
+    aria-label="Notificações"
+    [matMenuTriggerFor]="notificationsMenu"
+    (menuOpened)="onNotificationsMenuOpened()"
+  >
+    <mat-icon [matBadge]="unreadCount() || null" matBadgeColor="warn" matBadgeSize="small">notifications_none</mat-icon>
   </button>
+
+  <mat-menu #notificationsMenu="matMenu" xPosition="before" class="topbar__notifications-menu">
+    <div class="topbar__notifications-header">
+      <span>Notificações</span>
+      @if (unreadCount() > 0) {
+        <button mat-button type="button" (click)="markAllAsRead()">Marcar todas como lidas</button>
+      }
+    </div>
+    <mat-divider />
+    @if (isLoadingNotifications()) {
+      <div class="topbar__notifications-state">
+        <mat-spinner diameter="24" />
+      </div>
+    } @else if (notifications().length === 0) {
+      <div class="topbar__notifications-state">
+        <mat-icon>notifications_none</mat-icon>
+        <p>Nenhuma notificação.</p>
+      </div>
+    } @else {
+      @for (notification of notifications(); track notification.id) {
+        <button
+          mat-menu-item
+          class="topbar__notification-item"
+          [class.topbar__notification-item--unread]="!notification.isRead"
+          (click)="onNotificationClick(notification)"
+        >
+          <span class="topbar__notification-title">{{ notification.title }}</span>
+          <span class="topbar__notification-message">{{ notification.message }}</span>
+          <span class="topbar__notification-time">{{ notification.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </button>
+      }
+    }
+  </mat-menu>
 
   <button mat-button class="topbar__user" [matMenuTriggerFor]="userMenu" type="button">
     <span class="topbar__avatar">{{ initials() }}</span>

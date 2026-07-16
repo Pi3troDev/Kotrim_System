@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
@@ -21,6 +22,8 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { IncomesModule } from './modules/incomes/incomes.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
+import { ScheduledTasksModule } from './modules/scheduled-tasks/scheduled-tasks.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -50,6 +53,7 @@ import { AppService } from './app.service';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -63,6 +67,8 @@ import { AppService } from './app.service';
     ExpensesModule,
     IncomesModule,
     AccountsModule,
+    ScheduledTasksModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
