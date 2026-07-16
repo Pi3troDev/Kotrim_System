@@ -1,0 +1,207 @@
+@if (isLoading()) {
+  <div class="wo-detail__state">
+    <mat-spinner diameter="32" />
+  </div>
+} @else if (hasError() || !workOrder()) {
+  <div class="wo-detail__state">
+    <mat-icon>error_outline</mat-icon>
+    <p>Não foi possível carregar esta ordem de serviço.</p>
+    <button mat-button type="button" (click)="load()">Tentar novamente</button>
+  </div>
+} @else {
+  @let wo = workOrder()!;
+
+  <div class="wo-detail">
+    <header class="wo-detail__header">
+      <button mat-icon-button type="button" (click)="goBack()" aria-label="Voltar">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <div class="wo-detail__heading">
+        <h1 class="wo-detail__title">OS #{{ wo.number }}</h1>
+        <span class="wo-detail__status-chip" [style.--chip-color]="'var(' + statusMeta[wo.status].colorVar + ')'">
+          {{ statusMeta[wo.status].label }}
+        </span>
+      </div>
+
+      <div class="wo-detail__header-actions">
+        @if (!isTerminal()) {
+          <button mat-stroked-button type="button" (click)="openStatusDialog()">Alterar status</button>
+          <button mat-stroked-button type="button" (click)="openDetailsDialog()">Editar</button>
+        }
+        <button mat-icon-button type="button" (click)="confirmDelete()" aria-label="Excluir">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+      </div>
+    </header>
+
+    @if (isTerminal()) {
+      <div class="wo-detail__banner">
+        <mat-icon>lock</mat-icon>
+        Esta ordem de serviço está finalizada e não pode mais ser alterada.
+      </div>
+    }
+
+    <div class="wo-detail__grid">
+      <div class="wo-detail__main">
+        <section class="wo-detail__card">
+          <h2 class="wo-detail__card-title">Cliente e veículo</h2>
+          <dl class="wo-detail__info-list">
+            <div>
+              <dt>Cliente</dt>
+              <dd>{{ wo.client.name }}</dd>
+            </div>
+            <div>
+              <dt>Veículo</dt>
+              <dd>{{ wo.vehicle.plate }} — {{ wo.vehicle.brand }} {{ wo.vehicle.model }}</dd>
+            </div>
+            <div>
+              <dt>Aberta em</dt>
+              <dd>{{ wo.openedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+            @if (wo.startedAt) {
+              <div>
+                <dt>Iniciada em</dt>
+                <dd>{{ wo.startedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              </div>
+            }
+            @if (wo.completedAt) {
+              <div>
+                <dt>Concluída em</dt>
+                <dd>{{ wo.completedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              </div>
+            }
+            @if (wo.deliveredAt) {
+              <div>
+                <dt>Entregue em</dt>
+                <dd>{{ wo.deliveredAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              </div>
+            }
+            @if (wo.warrantyUntil) {
+              <div>
+                <dt>Garantia até</dt>
+                <dd>{{ wo.warrantyUntil | date: 'dd/MM/yyyy' }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <section class="wo-detail__card">
+          <h2 class="wo-detail__card-title">Problema e diagnóstico</h2>
+          <div class="wo-detail__text-block">
+            <h3>Problema relatado</h3>
+            <p>{{ wo.reportedProblem }}</p>
+          </div>
+          @if (wo.diagnosis) {
+            <div class="wo-detail__text-block">
+              <h3>Diagnóstico</h3>
+              <p>{{ wo.diagnosis }}</p>
+            </div>
+          }
+          @if (wo.observations) {
+            <div class="wo-detail__text-block">
+              <h3>Observações</h3>
+              <p>{{ wo.observations }}</p>
+            </div>
+          }
+        </section>
+
+        <section class="wo-detail__card">
+          <div class="wo-detail__card-header">
+            <h2 class="wo-detail__card-title">Serviços e peças</h2>
+            @if (!isTerminal()) {
+              <button mat-button color="primary" type="button" (click)="openAddItemDialog()">
+                <mat-icon>add</mat-icon>
+                Adicionar item
+              </button>
+            }
+          </div>
+
+          @if (wo.items.length === 0) {
+            <p class="wo-detail__empty">Nenhum item adicionado ainda.</p>
+          } @else {
+            <table class="wo-detail__items-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Descrição</th>
+                  <th>Qtd.</th>
+                  <th>Valor unit.</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of wo.items; track item.id) {
+                  <tr>
+                    <td>
+                      <span class="wo-detail__item-type" [class.wo-detail__item-type--part]="item.type === 'PART'">
+                        {{ item.type === 'SERVICE' ? 'Serviço' : 'Peça' }}
+                      </span>
+                    </td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unitPrice | currency: 'BRL' }}</td>
+                    <td>{{ item.totalPrice | currency: 'BRL' }}</td>
+                    <td class="wo-detail__item-actions">
+                      @if (!isTerminal()) {
+                        <button mat-icon-button type="button" (click)="openEditItemDialog(item)" aria-label="Editar item">
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button type="button" (click)="confirmRemoveItem(item)" aria-label="Remover item">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </section>
+      </div>
+
+      <div class="wo-detail__side">
+        <section class="wo-detail__card">
+          <h2 class="wo-detail__card-title">Resumo financeiro</h2>
+          <dl class="wo-detail__amounts">
+            <div>
+              <dt>Mão de obra</dt>
+              <dd>{{ wo.laborAmount | currency: 'BRL' }}</dd>
+            </div>
+            <div>
+              <dt>Peças</dt>
+              <dd>{{ wo.partsAmount | currency: 'BRL' }}</dd>
+            </div>
+            <div>
+              <dt>Desconto</dt>
+              <dd>-{{ wo.discountAmount | currency: 'BRL' }}</dd>
+            </div>
+            <div class="wo-detail__amounts-total">
+              <dt>Total</dt>
+              <dd>{{ wo.totalAmount | currency: 'BRL' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="wo-detail__card">
+          <h2 class="wo-detail__card-title">Histórico de status</h2>
+          <ol class="wo-detail__timeline">
+            @for (entry of wo.history; track entry.id) {
+              <li>
+                <span class="wo-detail__timeline-dot" [style.--chip-color]="'var(' + statusMeta[entry.status].colorVar + ')'"></span>
+                <div class="wo-detail__timeline-content">
+                  <p class="wo-detail__timeline-status">{{ statusMeta[entry.status].label }}</p>
+                  <p class="wo-detail__timeline-date">{{ entry.changedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+                  @if (entry.notes) {
+                    <p class="wo-detail__timeline-notes">{{ entry.notes }}</p>
+                  }
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+      </div>
+    </div>
+  </div>
+}

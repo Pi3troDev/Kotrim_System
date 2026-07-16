@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>Nova ordem de serviço</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="wo-form">
+    <mat-form-field appearance="outline" class="wo-form__field">
+      <mat-label>Cliente</mat-label>
+      <input
+        matInput
+        [formControl]="clientSearchControl"
+        [matAutocomplete]="clientAuto"
+        placeholder="Busque pelo nome do cliente"
+      />
+      @if (isSearchingClients()) {
+        <mat-spinner matSuffix diameter="18" />
+      }
+      <mat-autocomplete #clientAuto="matAutocomplete" [displayWith]="displayClient">
+        @for (client of clientOptions(); track client.id) {
+          <mat-option [value]="client">{{ client.name }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wo-form__field">
+      <mat-label>Veículo</mat-label>
+      <mat-select formControlName="vehicleId" [disabled]="!selectedClientId() || isLoadingVehicles()">
+        @for (vehicle of vehicleOptions(); track vehicle.id) {
+          <mat-option [value]="vehicle.id">{{ vehicle.plate }} — {{ vehicle.brand }} {{ vehicle.model }}</mat-option>
+        }
+      </mat-select>
+      @if (selectedClientId() && !isLoadingVehicles() && vehicleOptions().length === 0) {
+        <mat-hint>Este cliente não possui veículos cadastrados.</mat-hint>
+      }
+      @if (form.controls.vehicleId.hasError('required') && form.controls.vehicleId.touched) {
+        <mat-error>Selecione o veículo.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wo-form__field">
+      <mat-label>Problema relatado</mat-label>
+      <textarea matInput formControlName="reportedProblem" rows="3"></textarea>
+      @if (form.controls.reportedProblem.hasError('required')) {
+        <mat-error>Descreva o problema relatado pelo cliente.</mat-error>
+      }
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        Criar ordem de serviço
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

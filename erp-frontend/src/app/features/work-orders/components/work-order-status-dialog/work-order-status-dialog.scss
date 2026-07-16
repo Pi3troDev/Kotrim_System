@@ -1,0 +1,23 @@
+.status-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  min-width: 380px;
+
+  &__current {
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  &__field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .status-form {
+    min-width: 0;
+  }
+}

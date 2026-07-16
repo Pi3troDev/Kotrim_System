@@ -1,0 +1,17 @@
+.wo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  min-width: 440px;
+
+  &__field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .wo-form {
+    min-width: 0;
+  }
+}
