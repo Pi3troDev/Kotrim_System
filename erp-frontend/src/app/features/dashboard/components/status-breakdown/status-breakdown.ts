@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { DashboardStatusCount } from '../../interfaces/dashboard.interfaces';
-import { WORK_ORDER_STATUS_META } from '../../constants/work-order-status';
+import { WORK_ORDER_STATUS_META } from '../../../../shared/constants/work-order-status';
 
 interface StatusRow {
   status: string;

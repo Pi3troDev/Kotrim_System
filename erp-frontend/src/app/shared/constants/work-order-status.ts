@@ -14,3 +14,16 @@ export const WORK_ORDER_STATUS_META: Record<string, StatusMeta> = {
   DELIVERED: { label: 'Entregue', colorVar: '--chart-7' },
   CANCELLED: { label: 'Cancelada', colorVar: '--chart-8' },
 };
+
+/** Ordered list of statuses a work order can be manually advanced through (terminal states excluded). */
+export const WORK_ORDER_STATUS_FLOW = [
+  'OPEN',
+  'IN_DIAGNOSIS',
+  'WAITING_APPROVAL',
+  'IN_PROGRESS',
+  'WAITING_PARTS',
+  'COMPLETED',
+  'DELIVERED',
+] as const;
+
+export const WORK_ORDER_TERMINAL_STATUSES = ['DELIVERED', 'CANCELLED'] as const;

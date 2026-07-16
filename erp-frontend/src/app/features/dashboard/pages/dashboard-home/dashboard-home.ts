@@ -5,8 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { DashboardSummary } from '../../interfaces/dashboard.interfaces';
-import { WORK_ORDER_STATUS_META } from '../../constants/work-order-status';
-import { StatTile } from '../../components/stat-tile/stat-tile';
+import { WORK_ORDER_STATUS_META } from '../../../../shared/constants/work-order-status';
+import { StatTile } from '../../../../shared/components/stat-tile/stat-tile';
 import { TrendChart } from '../../components/trend-chart/trend-chart';
 import { StatusBreakdown } from '../../components/status-breakdown/status-breakdown';
 import { daysUntil, formatCompactNumber, formatCurrencyBRL, formatShortDate } from '../../../../shared/utils/format.util';
@@ -34,7 +34,7 @@ export class DashboardHome {
     return 'Boa noite';
   });
 
-  readonly firstName = computed(() => this.currentUser()?.name.split(' ')[0] ?? 'visitante');
+  readonly firstName = computed(() => this.currentUser()?.name.split(' ')[0] ?? '');
 
   constructor() {
     this.loadSummary();
