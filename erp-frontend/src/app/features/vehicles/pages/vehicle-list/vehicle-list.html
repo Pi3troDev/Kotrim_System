@@ -1,0 +1,100 @@
+<div class="vehicle-list">
+  <header class="vehicle-list__header">
+    <div>
+      <h1 class="vehicle-list__title">Veículos</h1>
+      <p class="vehicle-list__subtitle">{{ total() }} veículo{{ total() === 1 ? '' : 's' }} cadastrado{{ total() === 1 ? '' : 's' }}</p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Novo Veículo
+    </button>
+  </header>
+
+  <div class="vehicle-list__toolbar">
+    <mat-form-field appearance="outline" class="vehicle-list__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="Buscar por placa, marca, modelo ou cliente" />
+    </mat-form-field>
+  </div>
+
+  <div class="vehicle-list__table-card">
+    @if (isLoading()) {
+      <div class="vehicle-list__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="vehicle-list__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar os veículos.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (vehicles().length === 0) {
+      <div class="vehicle-list__state">
+        <mat-icon>directions_car_filled</mat-icon>
+        <p>{{ searchControl.value ? 'Nenhum veículo encontrado.' : 'Nenhum veículo cadastrado ainda.' }}</p>
+        @if (!searchControl.value) {
+          <button mat-button color="primary" type="button" (click)="openCreateDialog()">Cadastrar o primeiro veículo</button>
+        }
+      </div>
+    } @else {
+      <table mat-table [dataSource]="vehicles()" class="vehicle-list__table">
+        <ng-container matColumnDef="plate">
+          <th mat-header-cell *matHeaderCellDef>Placa</th>
+          <td mat-cell *matCellDef="let vehicle">
+            <span class="vehicle-list__plate">{{ vehicle.plate }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="vehicle">
+          <th mat-header-cell *matHeaderCellDef>Veículo</th>
+          <td mat-cell *matCellDef="let vehicle">
+            <div class="vehicle-list__vehicle">
+              <span>{{ vehicle.brand }} {{ vehicle.model }}</span>
+              @if (vehicle.color) {
+                <span class="vehicle-list__vehicle-color">{{ vehicle.color }}</span>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="client">
+          <th mat-header-cell *matHeaderCellDef>Cliente</th>
+          <td mat-cell *matCellDef="let vehicle">{{ vehicle.client.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="year">
+          <th mat-header-cell *matHeaderCellDef>Ano</th>
+          <td mat-cell *matCellDef="let vehicle">{{ vehicle.year || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="mileage">
+          <th mat-header-cell *matHeaderCellDef>KM</th>
+          <td mat-cell *matCellDef="let vehicle">{{ vehicle.mileage != null ? (vehicle.mileage | number) : '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let vehicle" class="vehicle-list__actions">
+            <button mat-icon-button type="button" (click)="openEditDialog(vehicle)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(vehicle)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>

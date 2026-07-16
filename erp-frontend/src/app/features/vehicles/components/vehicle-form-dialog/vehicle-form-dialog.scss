@@ -1,0 +1,26 @@
+.vehicle-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  padding-top: 4px;
+  min-width: 440px;
+
+  &__field {
+    width: 100%;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__plate {
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 600px) {
+  .vehicle-form {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}
