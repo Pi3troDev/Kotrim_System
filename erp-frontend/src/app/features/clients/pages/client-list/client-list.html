@@ -1,0 +1,98 @@
+<div class="client-list">
+  <header class="client-list__header">
+    <div>
+      <h1 class="client-list__title">Clientes</h1>
+      <p class="client-list__subtitle">{{ total() }} cliente{{ total() === 1 ? '' : 's' }} cadastrado{{ total() === 1 ? '' : 's' }}</p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Novo Cliente
+    </button>
+  </header>
+
+  <div class="client-list__toolbar">
+    <mat-form-field appearance="outline" class="client-list__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="Buscar por nome, e-mail, telefone ou CPF/CNPJ" />
+    </mat-form-field>
+  </div>
+
+  <div class="client-list__table-card">
+    @if (isLoading()) {
+      <div class="client-list__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="client-list__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar os clientes.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (clients().length === 0) {
+      <div class="client-list__state">
+        <mat-icon>group_off</mat-icon>
+        <p>{{ searchControl.value ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda.' }}</p>
+        @if (!searchControl.value) {
+          <button mat-button color="primary" type="button" (click)="openCreateDialog()">Cadastrar o primeiro cliente</button>
+        }
+      </div>
+    } @else {
+      <table mat-table [dataSource]="clients()" class="client-list__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
+          <td mat-cell *matCellDef="let client">{{ client.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="document">
+          <th mat-header-cell *matHeaderCellDef>CPF/CNPJ</th>
+          <td mat-cell *matCellDef="let client">{{ client.document || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="contact">
+          <th mat-header-cell *matHeaderCellDef>Contato</th>
+          <td mat-cell *matCellDef="let client">
+            <div class="client-list__contact">
+              @if (client.phone) {
+                <span>{{ client.phone }}</span>
+              }
+              @if (client.email) {
+                <span class="client-list__contact-email">{{ client.email }}</span>
+              }
+              @if (!client.phone && !client.email) {
+                <span>—</span>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="city">
+          <th mat-header-cell *matHeaderCellDef>Cidade</th>
+          <td mat-cell *matCellDef="let client">{{ client.city || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let client" class="client-list__actions">
+            <button mat-icon-button type="button" (click)="openEditDialog(client)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(client)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>

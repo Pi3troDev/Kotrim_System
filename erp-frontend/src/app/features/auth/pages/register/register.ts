@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth.service';
+import { DigitMaskDirective } from '../../../../shared/directives/digit-mask.directive';
 
 @Component({
   selector: 'app-register',
@@ -18,6 +19,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    DigitMaskDirective,
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
@@ -50,10 +52,21 @@ export class Register {
       next: () => void this.router.navigateByUrl('/dashboard'),
       error: (error: HttpErrorResponse) => {
         this.isSubmitting.set(false);
-        const message =
-          error.status === 409 ? 'Este e-mail já está em uso.' : 'Não foi possível concluir o cadastro.';
+        const message = this.resolveErrorMessage(error);
         this.snackBar.open(message, 'Fechar', { duration: 5000 });
       },
     });
+  }
+
+  private resolveErrorMessage(error: HttpErrorResponse): string {
+    if (error.status !== 409) {
+      return 'Não foi possível concluir o cadastro.';
+    }
+
+    const backendMessage = (error.error as { message?: string } | null)?.message;
+    if (backendMessage?.includes('document')) {
+      return 'Já existe uma oficina cadastrada com esse CNPJ/CPF.';
+    }
+    return 'Este e-mail já está em uso.';
   }
 }
