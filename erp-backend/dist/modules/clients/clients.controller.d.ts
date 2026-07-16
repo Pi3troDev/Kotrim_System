@@ -1,0 +1,74 @@
+import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
+import { ClientsService } from './clients.service';
+import { CreateClientDto } from './dto/create-client.dto';
+import { UpdateClientDto } from './dto/update-client.dto';
+import { QueryClientsDto } from './dto/query-clients.dto';
+export declare class ClientsController {
+    private readonly clientsService;
+    constructor(clientsService: ClientsService);
+    create(user: AuthenticatedUser, dto: CreateClientDto): Promise<{
+        name: string;
+        id: string;
+        companyId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        document: string | null;
+        phone: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        zipCode: string | null;
+        notes: string | null;
+    }>;
+    findAll(user: AuthenticatedUser, query: QueryClientsDto): Promise<import("../../common/interfaces/paginated-result.interface").PaginatedResult<{
+        name: string;
+        id: string;
+        companyId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        document: string | null;
+        phone: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        zipCode: string | null;
+        notes: string | null;
+    }>>;
+    findOne(user: AuthenticatedUser, id: string): Promise<{
+        name: string;
+        id: string;
+        companyId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        document: string | null;
+        phone: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        zipCode: string | null;
+        notes: string | null;
+    }>;
+    update(user: AuthenticatedUser, id: string, dto: UpdateClientDto): Promise<{
+        name: string;
+        id: string;
+        companyId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        document: string | null;
+        phone: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        zipCode: string | null;
+        notes: string | null;
+    }>;
+    remove(user: AuthenticatedUser, id: string): Promise<void>;
+}

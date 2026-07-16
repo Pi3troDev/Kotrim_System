@@ -39,6 +39,10 @@ let AuthService = class AuthService {
         if (existing) {
             throw new common_1.ConflictException('E-mail already in use');
         }
+        const existingCompany = await this.prisma.company.findUnique({ where: { document: dto.companyDocument } });
+        if (existingCompany) {
+            throw new common_1.ConflictException('A company with this document is already registered');
+        }
         const passwordHash = await (0, password_util_1.hashPassword)(dto.adminPassword);
         const { user, roleName } = await this.prisma.$transaction(async (tx) => {
             const company = await tx.company.create({
@@ -107,7 +111,7 @@ let AuthService = class AuthService {
         });
         await this.prisma.refreshToken.update({
             where: { id: stored.id },
-            data: { revokedAt: new Date(), replacedBy: tokenHash },
+            data: { revokedAt: new Date(), replacedBy: tokens.refreshTokenId },
         });
         return this.buildSession(user.id, user.name, user.email, user.companyId, user.role.name, tokens);
     }
@@ -125,14 +129,14 @@ let AuthService = class AuthService {
         });
         const refreshToken = (0, crypto_1.randomBytes)(64).toString('hex');
         const refreshExpiresIn = this.configService.get('jwt.refreshExpiresIn');
-        await this.prisma.refreshToken.create({
+        const refreshTokenRow = await this.prisma.refreshToken.create({
             data: {
                 userId: payload.sub,
                 tokenHash: (0, hash_util_1.sha256)(refreshToken),
                 expiresAt: new Date(Date.now() + (0, ms_1.default)(refreshExpiresIn)),
             },
         });
-        return { accessToken, refreshToken };
+        return { accessToken, refreshToken, refreshTokenId: refreshTokenRow.id };
     }
     buildSession(id, name, email, companyId, role, tokens) {
         return {

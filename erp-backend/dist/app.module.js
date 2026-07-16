@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const core_1 = require("@nestjs/core");
 const throttler_1 = require("@nestjs/throttler");
+const schedule_1 = require("@nestjs/schedule");
 const nestjs_pino_1 = require("nestjs-pino");
 const configuration_1 = __importDefault(require("./config/configuration"));
 const env_validation_1 = require("./config/env.validation");
@@ -24,6 +25,17 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const users_module_1 = require("./modules/users/users.module");
 const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
+const clients_module_1 = require("./modules/clients/clients.module");
+const vehicles_module_1 = require("./modules/vehicles/vehicles.module");
+const work_orders_module_1 = require("./modules/work-orders/work-orders.module");
+const categories_module_1 = require("./modules/categories/categories.module");
+const suppliers_module_1 = require("./modules/suppliers/suppliers.module");
+const inventory_module_1 = require("./modules/inventory/inventory.module");
+const expenses_module_1 = require("./modules/expenses/expenses.module");
+const incomes_module_1 = require("./modules/incomes/incomes.module");
+const accounts_module_1 = require("./modules/accounts/accounts.module");
+const scheduled_tasks_module_1 = require("./modules/scheduled-tasks/scheduled-tasks.module");
+const notifications_module_1 = require("./modules/notifications/notifications.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -55,10 +67,22 @@ exports.AppModule = AppModule = __decorate([
                     },
                 ],
             }),
+            schedule_1.ScheduleModule.forRoot(),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             dashboard_module_1.DashboardModule,
+            clients_module_1.ClientsModule,
+            vehicles_module_1.VehiclesModule,
+            work_orders_module_1.WorkOrdersModule,
+            categories_module_1.CategoriesModule,
+            suppliers_module_1.SuppliersModule,
+            inventory_module_1.InventoryModule,
+            expenses_module_1.ExpensesModule,
+            incomes_module_1.IncomesModule,
+            accounts_module_1.AccountsModule,
+            scheduled_tasks_module_1.ScheduledTasksModule,
+            notifications_module_1.NotificationsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

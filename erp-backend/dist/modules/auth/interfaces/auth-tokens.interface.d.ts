@@ -1,6 +1,7 @@
 export interface AuthTokens {
     accessToken: string;
     refreshToken: string;
+    refreshTokenId: string;
 }
 export interface AuthenticatedSession {
     accessToken: string;
