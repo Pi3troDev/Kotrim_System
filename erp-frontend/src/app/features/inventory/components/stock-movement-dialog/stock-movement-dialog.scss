@@ -1,0 +1,27 @@
+.movement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  min-width: 400px;
+
+  &__field {
+    width: 100%;
+  }
+
+  &__preview {
+    margin: 4px 0 8px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+
+    strong {
+      color: var(--text-primary);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .movement-form {
+    min-width: 0;
+  }
+}

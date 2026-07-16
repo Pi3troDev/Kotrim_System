@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Movimentar estoque — {{ data.item.name }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="movement-form">
+    <mat-form-field appearance="outline" class="movement-form__field">
+      <mat-label>Tipo</mat-label>
+      <mat-select formControlName="type">
+        <mat-option value="IN">Entrada</mat-option>
+        <mat-option value="OUT">Saída</mat-option>
+        <mat-option value="ADJUSTMENT">Ajuste (define o total)</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="movement-form__field">
+      <mat-label>Quantidade</mat-label>
+      <input matInput type="number" step="0.01" formControlName="quantity" min="0" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="movement-form__field">
+      <mat-label>Motivo (opcional)</mat-label>
+      <input matInput formControlName="reason" placeholder="Ex.: Compra, uso em OS, perda..." />
+    </mat-form-field>
+
+    <p class="movement-form__preview">
+      Estoque atual: <strong>{{ data.item.quantityInStock }}</strong>
+      → Novo estoque: <strong>{{ resultingQuantity() }}</strong>
+    </p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        Confirmar
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

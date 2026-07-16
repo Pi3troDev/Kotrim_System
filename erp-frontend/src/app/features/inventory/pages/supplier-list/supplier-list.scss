@@ -1,0 +1,113 @@
+.supplier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.supplier-list__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+  }
+}
+
+.supplier-list__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.supplier-list__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.supplier-list__toolbar {
+  display: flex;
+}
+
+.supplier-list__search {
+  width: 100%;
+  max-width: 420px;
+}
+
+.supplier-list__table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.supplier-list__table {
+  width: 100%;
+  background: transparent;
+
+  th.mat-mdc-header-cell {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom-color: var(--border);
+  }
+
+  td.mat-mdc-cell {
+    color: var(--text-primary);
+    font-size: 13.5px;
+    border-bottom-color: var(--border);
+  }
+
+  tr.mat-mdc-row:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.supplier-list__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.supplier-list__contact-email {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.supplier-list__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.supplier-list__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,140 @@
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item-list__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+  }
+}
+
+.item-list__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.item-list__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.item-list__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.item-list__toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.item-list__search {
+  width: 100%;
+  max-width: 420px;
+}
+
+.item-list__low-stock-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+
+  &--active {
+    background: color-mix(in srgb, var(--chart-8) 14%, transparent);
+    color: var(--chart-8);
+    border-color: var(--chart-8);
+  }
+}
+
+.item-list__table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.item-list__table {
+  width: 100%;
+  background: transparent;
+
+  th.mat-mdc-header-cell {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom-color: var(--border);
+  }
+
+  td.mat-mdc-cell {
+    color: var(--text-primary);
+    font-size: 13.5px;
+    border-bottom-color: var(--border);
+  }
+
+  tr.mat-mdc-row:hover {
+    background: var(--surface-hover);
+  }
+}
+
+.item-list__quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &--low {
+    color: var(--chart-8);
+    font-weight: 600;
+  }
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.item-list__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.item-list__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

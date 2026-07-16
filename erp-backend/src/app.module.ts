@@ -15,6 +15,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -51,6 +54,9 @@ import { AppService } from './app.service';
     ClientsModule,
     VehiclesModule,
     WorkOrdersModule,
+    CategoriesModule,
+    SuppliersModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [

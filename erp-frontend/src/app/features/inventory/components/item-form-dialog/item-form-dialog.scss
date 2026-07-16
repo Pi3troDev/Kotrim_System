@@ -1,0 +1,41 @@
+.item-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  padding-top: 4px;
+  min-width: 480px;
+
+  &__field {
+    width: 100%;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__hint {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  &__manage-categories {
+    display: flex;
+    align-items: center;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12.5px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .item-form {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}

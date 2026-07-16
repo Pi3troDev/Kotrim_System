@@ -1,11 +1,14 @@
 import { Routes } from '@angular/router';
-import { PagePlaceholder } from '../../shared/components/page-placeholder/page-placeholder';
 
 export const INVENTORY_ROUTES: Routes = [
   {
     path: '',
-    component: PagePlaceholder,
-    data: { title: 'Estoque', icon: 'inventory_2' },
+    loadComponent: () => import('./pages/item-list/item-list').then((m) => m.ItemList),
     title: 'Estoque',
+  },
+  {
+    path: 'suppliers',
+    loadComponent: () => import('./pages/supplier-list/supplier-list').then((m) => m.SupplierList),
+    title: 'Fornecedores',
   },
 ];

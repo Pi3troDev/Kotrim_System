@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Categorias de estoque</h2>
+
+<mat-dialog-content class="category-manager">
+  <div class="category-manager__add">
+    <mat-form-field appearance="outline" class="category-manager__field">
+      <mat-label>Nova categoria</mat-label>
+      <input matInput [formControl]="nameControl" placeholder="Ex.: Filtros" (keydown.enter)="add()" />
+    </mat-form-field>
+    <button mat-icon-button type="button" color="primary" [disabled]="isSubmitting()" (click)="add()" aria-label="Adicionar categoria">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <mat-icon>add</mat-icon>
+      }
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="category-manager__state">
+      <mat-spinner diameter="28" />
+    </div>
+  } @else if (categories().length === 0) {
+    <p class="category-manager__empty">Nenhuma categoria cadastrada ainda.</p>
+  } @else {
+    <ul class="category-manager__list">
+      @for (category of categories(); track category.id) {
+        <li>
+          <span>{{ category.name }}</span>
+          <button mat-icon-button type="button" (click)="remove(category)" aria-label="Excluir categoria">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" type="button" (click)="close()">Fechar</button>
+</mat-dialog-actions>
