@@ -1,6 +1,8 @@
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
+  /** Internal only — the DB row id of the new refresh token, used to link rotation via `replacedBy`. */
+  refreshTokenId: string;
 }
 
 export interface AuthenticatedSession {

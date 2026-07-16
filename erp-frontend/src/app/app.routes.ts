@@ -10,7 +10,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
-    // TEMP: guard disabled for a no-backend visual preview — restore [authGuard] once a database is connected.
+    canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
