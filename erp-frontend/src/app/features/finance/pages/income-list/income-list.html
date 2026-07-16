@@ -1,0 +1,149 @@
+<div class="income-list">
+  <header class="income-list__header">
+    <div>
+      <h1 class="income-list__title">Financeiro</h1>
+      <p class="income-list__subtitle">{{ total() }} receita{{ total() === 1 ? '' : 's' }} cadastrada{{ total() === 1 ? '' : 's' }}</p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Nova Receita
+    </button>
+  </header>
+
+  <app-finance-tabs />
+
+  <div class="income-list__kpis">
+    @if (accountsBalance() !== null) {
+      <app-stat-tile label="Saldo em Contas" [value]="(accountsBalance() | currency: 'BRL') ?? ''" icon="account_balance" />
+    }
+    @if (summary(); as s) {
+      <app-stat-tile label="Pendente" [value]="(s.pendingTotal | currency: 'BRL') ?? ''" icon="schedule" />
+      <app-stat-tile label="Vencido" [value]="(s.overdueTotal | currency: 'BRL') ?? ''" icon="warning_amber" [positiveIsGood]="false" />
+      <app-stat-tile label="Recebido este mês" [value]="(s.receivedThisMonthTotal | currency: 'BRL') ?? ''" icon="check_circle" />
+    }
+  </div>
+
+  <div class="income-list__toolbar">
+    <mat-form-field appearance="outline" class="income-list__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="Buscar por descrição" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="income-list__status-filter">
+      <mat-label>Status</mat-label>
+      <mat-select [formControl]="statusControl">
+        <mat-option value="">Todos</mat-option>
+        @for (status of statusOptions; track status) {
+          <mat-option [value]="status">{{ statusLabel(status) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="income-list__table-card">
+    @if (isLoading()) {
+      <div class="income-list__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="income-list__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar as receitas.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (incomes().length === 0) {
+      <div class="income-list__state">
+        <mat-icon>payments</mat-icon>
+        <p>{{ searchControl.value || statusControl.value ? 'Nenhuma receita encontrada.' : 'Nenhuma receita cadastrada ainda.' }}</p>
+        @if (!searchControl.value && !statusControl.value) {
+          <button mat-button color="primary" type="button" (click)="openCreateDialog()">Cadastrar a primeira receita</button>
+        }
+      </div>
+    } @else {
+      <table mat-table [dataSource]="incomes()" class="income-list__table">
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Descrição</th>
+          <td mat-cell *matCellDef="let income">
+            {{ income.description }}
+            @if (income.installmentTotal) {
+              <span class="income-list__installment-badge">{{ income.installmentNumber }}/{{ income.installmentTotal }}</span>
+            }
+            @if (isRecurring(income)) {
+              <span class="income-list__recurring-badge">
+                <mat-icon inline>autorenew</mat-icon>
+                Recorrente
+              </span>
+            }
+            @if (income.workOrder) {
+              <span class="income-list__wo-badge">OS #{{ income.workOrder.number }}</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="client">
+          <th mat-header-cell *matHeaderCellDef>Cliente</th>
+          <td mat-cell *matCellDef="let income">{{ income.client?.name || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Valor</th>
+          <td mat-cell *matCellDef="let income">{{ income.amount | currency: 'BRL' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef>Vencimento</th>
+          <td mat-cell *matCellDef="let income">{{ income.dueDate | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let income">
+            <span class="income-list__status-chip" [style.--chip-color]="'var(' + statusMeta[income.status].colorVar + ')'">
+              {{ statusLabel(income.status) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let income" class="income-list__actions">
+            @if (isRecurring(income)) {
+              <button mat-icon-button type="button" (click)="stopRecurrence(income)" aria-label="Parar recorrência">
+                <mat-icon>event_busy</mat-icon>
+              </button>
+            }
+            <button mat-icon-button type="button" (click)="openPaymentDialog(income)" aria-label="Pagamentos">
+              <mat-icon>receipt_long</mat-icon>
+            </button>
+            @if (isActionable(income)) {
+              <button mat-icon-button type="button" (click)="cancelIncome(income)" aria-label="Cancelar receita">
+                <mat-icon>block</mat-icon>
+              </button>
+            } @else if (income.status === 'CANCELLED') {
+              <button mat-icon-button type="button" (click)="revertToPending(income)" aria-label="Reverter para pendente">
+                <mat-icon>undo</mat-icon>
+              </button>
+            }
+            <button mat-icon-button type="button" (click)="openEditDialog(income)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(income)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>

@@ -1,0 +1,146 @@
+<div class="expense-list">
+  <header class="expense-list__header">
+    <div>
+      <h1 class="expense-list__title">Financeiro</h1>
+      <p class="expense-list__subtitle">{{ total() }} despesa{{ total() === 1 ? '' : 's' }} cadastrada{{ total() === 1 ? '' : 's' }}</p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Nova Despesa
+    </button>
+  </header>
+
+  <app-finance-tabs />
+
+  <div class="expense-list__kpis">
+    @if (accountsBalance() !== null) {
+      <app-stat-tile label="Saldo em Contas" [value]="(accountsBalance() | currency: 'BRL') ?? ''" icon="account_balance" />
+    }
+    @if (summary(); as s) {
+      <app-stat-tile label="Pendente" [value]="(s.pendingTotal | currency: 'BRL') ?? ''" icon="schedule" />
+      <app-stat-tile label="Vencido" [value]="(s.overdueTotal | currency: 'BRL') ?? ''" icon="warning_amber" [positiveIsGood]="false" />
+      <app-stat-tile label="Pago este mês" [value]="(s.paidThisMonthTotal | currency: 'BRL') ?? ''" icon="check_circle" />
+    }
+  </div>
+
+  <div class="expense-list__toolbar">
+    <mat-form-field appearance="outline" class="expense-list__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="Buscar por descrição" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-list__status-filter">
+      <mat-label>Status</mat-label>
+      <mat-select [formControl]="statusControl">
+        <mat-option value="">Todos</mat-option>
+        @for (status of statusOptions; track status) {
+          <mat-option [value]="status">{{ statusMeta[status].label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="expense-list__table-card">
+    @if (isLoading()) {
+      <div class="expense-list__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="expense-list__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar as despesas.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (expenses().length === 0) {
+      <div class="expense-list__state">
+        <mat-icon>payments</mat-icon>
+        <p>{{ searchControl.value || statusControl.value ? 'Nenhuma despesa encontrada.' : 'Nenhuma despesa cadastrada ainda.' }}</p>
+        @if (!searchControl.value && !statusControl.value) {
+          <button mat-button color="primary" type="button" (click)="openCreateDialog()">Cadastrar a primeira despesa</button>
+        }
+      </div>
+    } @else {
+      <table mat-table [dataSource]="expenses()" class="expense-list__table">
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Descrição</th>
+          <td mat-cell *matCellDef="let expense">
+            {{ expense.description }}
+            @if (expense.installmentTotal) {
+              <span class="expense-list__installment-badge">{{ expense.installmentNumber }}/{{ expense.installmentTotal }}</span>
+            }
+            @if (isRecurring(expense)) {
+              <span class="expense-list__recurring-badge">
+                <mat-icon inline>autorenew</mat-icon>
+                Recorrente
+              </span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Categoria</th>
+          <td mat-cell *matCellDef="let expense">{{ expense.category?.name || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Valor</th>
+          <td mat-cell *matCellDef="let expense">{{ expense.amount | currency: 'BRL' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef>Vencimento</th>
+          <td mat-cell *matCellDef="let expense">{{ expense.dueDate | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let expense">
+            <span class="expense-list__status-chip" [style.--chip-color]="'var(' + statusMeta[expense.status].colorVar + ')'">
+              {{ statusMeta[expense.status].label }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let expense" class="expense-list__actions">
+            @if (isRecurring(expense)) {
+              <button mat-icon-button type="button" (click)="stopRecurrence(expense)" aria-label="Parar recorrência">
+                <mat-icon>event_busy</mat-icon>
+              </button>
+            }
+            <button mat-icon-button type="button" (click)="openPaymentDialog(expense)" aria-label="Pagamentos">
+              <mat-icon>receipt_long</mat-icon>
+            </button>
+            @if (isActionable(expense)) {
+              <button mat-icon-button type="button" (click)="cancelExpense(expense)" aria-label="Cancelar despesa">
+                <mat-icon>block</mat-icon>
+              </button>
+            } @else if (expense.status === 'CANCELLED') {
+              <button mat-icon-button type="button" (click)="revertToPending(expense)" aria-label="Reverter para pendente">
+                <mat-icon>undo</mat-icon>
+              </button>
+            }
+            <button mat-icon-button type="button" (click)="openEditDialog(expense)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(expense)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>

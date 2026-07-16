@@ -1,0 +1,111 @@
+<h2 mat-dialog-title>Pagamentos — {{ record().description }}</h2>
+
+<mat-dialog-content class="payment-dialog">
+  <div class="payment-dialog__summary">
+    <div>
+      <span class="payment-dialog__summary-label">Total</span>
+      <span class="payment-dialog__summary-value">{{ record().amount | currency: 'BRL' }}</span>
+    </div>
+    <div>
+      <span class="payment-dialog__summary-label">Pago</span>
+      <span class="payment-dialog__summary-value">{{ record().paidAmount | currency: 'BRL' }}</span>
+    </div>
+    <div>
+      <span class="payment-dialog__summary-label">Restante</span>
+      <span class="payment-dialog__summary-value payment-dialog__summary-value--remaining">{{ remainingBalance() | currency: 'BRL' }}</span>
+    </div>
+  </div>
+
+  @if (isLoadingPayments()) {
+    <div class="payment-dialog__state">
+      <mat-spinner diameter="28" />
+    </div>
+  } @else if (payments().length === 0) {
+    <p class="payment-dialog__empty">Nenhum pagamento registrado ainda.</p>
+  } @else {
+    <ul class="payment-dialog__list">
+      @for (payment of payments(); track payment.id) {
+        <li>
+          <div class="payment-dialog__item-info">
+            <span class="payment-dialog__item-amount">{{ payment.amount | currency: 'BRL' }}</span>
+            <span class="payment-dialog__item-meta">
+              {{ payment.paidAt | date: 'dd/MM/yyyy' }}
+              @if (payment.account) {
+                · {{ payment.account.name }}
+              }
+              @if (payment.paymentMethod) {
+                · {{ payment.paymentMethod }}
+              }
+            </span>
+            @if (payment.notes) {
+              <span class="payment-dialog__item-notes">{{ payment.notes }}</span>
+            }
+          </div>
+          <button mat-icon-button type="button" (click)="removePayment(payment)" aria-label="Remover pagamento">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (canAddPayment()) {
+    <div class="payment-dialog__add" [formGroup]="form">
+      <h3 class="payment-dialog__add-title">Registrar pagamento</h3>
+
+      <div class="payment-dialog__add-grid">
+        <mat-form-field appearance="outline" class="payment-dialog__field">
+          <mat-label>Valor (R$)</mat-label>
+          <input matInput type="number" step="0.01" formControlName="amount" min="0.01" />
+          @if (form.controls.amount.hasError('required') || form.controls.amount.hasError('min')) {
+            <mat-error>Informe um valor válido.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="payment-dialog__field">
+          <mat-label>Data</mat-label>
+          <input matInput [matDatepicker]="paidAtPicker" formControlName="paidAt" />
+          <mat-datepicker-toggle matIconSuffix [for]="paidAtPicker" />
+          <mat-datepicker #paidAtPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="payment-dialog__field">
+          <mat-label>Conta</mat-label>
+          <mat-select formControlName="accountId">
+            <mat-option value="">Não informado</mat-option>
+            @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="payment-dialog__field">
+          <mat-label>Forma de pagamento</mat-label>
+          <mat-select formControlName="paymentMethod">
+            <mat-option value="">Não informado</mat-option>
+            @for (method of paymentMethods; track method) {
+              <mat-option [value]="method">{{ method }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="payment-dialog__field payment-dialog__field--full">
+          <mat-label>Observações</mat-label>
+          <input matInput formControlName="notes" />
+        </mat-form-field>
+      </div>
+
+      <button mat-flat-button color="primary" type="button" [disabled]="isSubmitting()" (click)="submit()">
+        @if (isSubmitting()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          Registrar pagamento
+        }
+      </button>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button color="primary" type="button" (click)="close()">Fechar</button>
+</mat-dialog-actions>

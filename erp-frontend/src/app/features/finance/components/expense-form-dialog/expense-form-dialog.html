@@ -1,0 +1,118 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Editar despesa' : 'Nova despesa' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="expense-form">
+    <mat-form-field appearance="outline" class="expense-form__field expense-form__field--full">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="description" />
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Descreva a despesa.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-form__field">
+      <mat-label>Valor {{ installmentsEnabled() ? 'total' : '' }} (R$)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="amount" min="0" />
+      @if (form.controls.amount.hasError('required') || form.controls.amount.hasError('min')) {
+        <mat-error>Informe um valor válido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-form__field">
+      <mat-label>{{ installmentsEnabled() ? 'Vencimento da 1ª parcela' : 'Vencimento' }}</mat-label>
+      <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="dueDatePicker" />
+      <mat-datepicker #dueDatePicker />
+      @if (form.controls.dueDate.hasError('required')) {
+        <mat-error>Informe a data de vencimento.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-form__field">
+      <mat-label>Forma de pagamento</mat-label>
+      <mat-select formControlName="paymentMethod">
+        <mat-option value="">Não informado</mat-option>
+        @for (method of paymentMethods; track method) {
+          <mat-option [value]="method">{{ method }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-form__field">
+      <mat-label>Categoria</mat-label>
+      <mat-select formControlName="categoryId">
+        <mat-option value="">Sem categoria</mat-option>
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="expense-form__field">
+      <mat-label>Conta esperada</mat-label>
+      <mat-select formControlName="accountId">
+        <mat-option value="">Não informado</mat-option>
+        @for (account of accounts(); track account.id) {
+          <mat-option [value]="account.id">{{ account.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="expense-form__field expense-form__manage-accounts">
+      <button mat-button type="button" color="primary" (click)="openAccountManager()">
+        <mat-icon>settings</mat-icon>
+        Gerenciar contas
+      </button>
+    </div>
+
+    @if (!isEditMode) {
+      <div class="expense-form__field expense-form__field--full expense-form__installments">
+        <mat-checkbox formControlName="installmentsEnabled" [disabled]="recurrenceEnabled()">Parcelar esta despesa</mat-checkbox>
+
+        @if (installmentsEnabled()) {
+          <mat-form-field appearance="outline" class="expense-form__installments-count">
+            <mat-label>Número de parcelas</mat-label>
+            <input matInput type="number" formControlName="installmentsCount" min="2" max="24" />
+          </mat-form-field>
+          <p class="expense-form__hint">As parcelas serão geradas automaticamente, uma por mês.</p>
+        }
+      </div>
+
+      <div class="expense-form__field expense-form__field--full expense-form__installments">
+        <mat-checkbox formControlName="recurrenceEnabled" [disabled]="installmentsEnabled()">Despesa recorrente</mat-checkbox>
+
+        @if (recurrenceEnabled()) {
+          <div class="expense-form__recurrence-grid">
+            <mat-form-field appearance="outline" class="expense-form__field">
+              <mat-label>Frequência</mat-label>
+              <mat-select formControlName="recurrenceFrequency">
+                @for (frequency of recurrenceFrequencies; track frequency) {
+                  <mat-option [value]="frequency">{{ recurrenceFrequencyLabels[frequency] }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="expense-form__field">
+              <mat-label>Repetir até (opcional)</mat-label>
+              <input matInput [matDatepicker]="recurrenceEndPicker" formControlName="recurrenceEndDate" />
+              <mat-datepicker-toggle matIconSuffix [for]="recurrenceEndPicker" />
+              <mat-datepicker #recurrenceEndPicker />
+            </mat-form-field>
+          </div>
+          <p class="expense-form__hint">A próxima ocorrência será gerada automaticamente após o vencimento desta.</p>
+        }
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        {{ isEditMode ? 'Salvar alterações' : 'Criar despesa' }}
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

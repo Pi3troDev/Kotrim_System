@@ -1,0 +1,85 @@
+.account-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 480px;
+}
+
+.account-manager__add {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr auto;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.account-manager__field {
+  width: 100%;
+}
+
+.account-manager__state {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.account-manager__empty {
+  margin: 12px 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.account-manager__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px 8px 8px;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.account-manager__item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-manager__item-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.account-manager__item-type {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+}
+
+.account-manager__item-balance {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .account-manager {
+    min-width: 0;
+  }
+
+  .account-manager__add {
+    grid-template-columns: 1fr;
+  }
+}

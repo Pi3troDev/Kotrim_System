@@ -18,6 +18,9 @@ import { WorkOrdersModule } from './modules/work-orders/work-orders.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
+import { IncomesModule } from './modules/incomes/incomes.module';
+import { AccountsModule } from './modules/accounts/accounts.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -57,6 +60,9 @@ import { AppService } from './app.service';
     CategoriesModule,
     SuppliersModule,
     InventoryModule,
+    ExpensesModule,
+    IncomesModule,
+    AccountsModule,
   ],
   controllers: [AppController],
   providers: [

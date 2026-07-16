@@ -1,0 +1,61 @@
+.income-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  padding-top: 4px;
+  min-width: 460px;
+
+  &__field {
+    width: 100%;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__manage-accounts {
+    display: flex;
+    align-items: center;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12.5px;
+    }
+  }
+
+  &__installments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  &__installments-count {
+    max-width: 200px;
+  }
+
+  &__recurrence-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+}
+
+@media (max-width: 600px) {
+  .income-form {
+    grid-template-columns: 1fr;
+    min-width: 0;
+
+    &__recurrence-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
