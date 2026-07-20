@@ -1,0 +1,131 @@
+:host {
+  display: block;
+}
+
+.foot {
+  background: var(--navy-950);
+  color: rgb(255 255 255 / 0.7);
+}
+
+.foot__inner {
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 64px 0 48px;
+  display: grid;
+  grid-template-columns: 1.4fr 2fr;
+  gap: 48px;
+}
+
+.foot__brand {
+  img {
+    display: block;
+    height: 29px;
+    width: auto;
+    // The lockup is dark artwork on transparent; on the navy footer it needs
+    // lifting rather than a second asset. A brightness/invert filter would wreck
+    // the car illustration, so the whole mark is knocked out to white instead —
+    // a silhouette reads cleanly at this size where the detail would not.
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+  }
+}
+
+.foot__pitch {
+  margin: 18px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 42ch;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.foot__cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.foot__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h3 {
+    font-family: var(--font-display);
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  a {
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.6);
+    text-decoration: none;
+    transition: color 160ms ease;
+    width: fit-content;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.foot__bar {
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.foot__legal {
+  display: flex;
+  gap: 20px;
+
+  a {
+    color: rgb(255 255 255 / 0.55);
+    text-decoration: none;
+    transition: color 160ms ease;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.foot__bar-inner {
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 22px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: rgb(255 255 255 / 0.42);
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 860px) {
+  .foot__inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 48px 0 36px;
+  }
+}
+
+@media (max-width: 560px) {
+  .foot__cols {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .foot__bar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

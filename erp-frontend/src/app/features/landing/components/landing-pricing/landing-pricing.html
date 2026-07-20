@@ -1,0 +1,79 @@
+<section class="pricing" id="planos">
+  <div class="pricing__inner">
+    <header class="pricing__head">
+      <span class="eyebrow">Planos</span>
+      <h2 class="section-title">Comece grátis. Escolha depois.</h2>
+      <p class="section-lead">
+        Sete dias com o Kotrim inteiro liberado — todos os módulos, sem cartão de crédito. No fim do teste você
+        já sabe de qual plano precisa.
+      </p>
+    </header>
+
+    @if (isLoading()) {
+      <div class="pricing__grid" aria-hidden="true">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="pricing__skeleton"></div>
+        }
+      </div>
+    } @else if (hasError()) {
+      <div class="pricing__error">
+        <p>Não foi possível carregar os planos agora.</p>
+        <button type="button" class="btn btn--ghost" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else {
+      <div class="pricing__grid">
+        @for (plan of plans(); track plan.id) {
+          <article class="plan" [class.plan--featured]="plan.slug === featuredSlug">
+            @if (plan.slug === featuredSlug) {
+              <span class="plan__badge">Mais escolhido</span>
+            }
+
+            <h3 class="plan__name">{{ plan.name }}</h3>
+            <p class="plan__desc">{{ plan.description }}</p>
+
+            <p class="plan__price">
+              <span class="plan__amount">{{ plan.priceCents / 100 | currency: plan.currency : 'symbol' : '1.0-0' }}</span>
+              <span class="plan__period">/mês</span>
+            </p>
+
+            <p class="plan__users">
+              @if (plan.maxUsers) {
+                Até {{ plan.maxUsers }} usuários
+              } @else {
+                Usuários ilimitados
+              }
+            </p>
+
+            <ul class="plan__features">
+              @for (feature of plan.features; track feature) {
+                <li>
+                  <svg class="plan__check" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M13 4.5 6.5 11 3 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  {{ feature }}
+                </li>
+              }
+            </ul>
+
+            <div class="plan__actions">
+              <button type="button" class="btn btn--primary plan__cta" (click)="startTrial()">
+                Começar 7 dias grátis
+              </button>
+              <button type="button" class="plan__secondary" (click)="subscribeNow(plan)">
+                Assinar agora, sem teste
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+
+      <p class="pricing__note">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M8 7.2v4M8 4.8v.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        O pagamento é por Pix, confirmado manualmente. Sua conta é ativada assim que o pagamento entrar.
+      </p>
+    }
+  </div>
+</section>

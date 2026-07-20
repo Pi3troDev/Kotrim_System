@@ -1,0 +1,37 @@
+<header class="nav" [class.nav--solid]="isScrolled() || isMenuOpen()">
+  <div class="nav__inner">
+    <a class="nav__brand" routerLink="/" aria-label="Kotrim — página inicial" (click)="closeMenu()">
+      <!-- The mark alone: the wordmark is spelled out next to it in live text,
+           which keeps the brand name selectable and readable to a crawler. -->
+      <picture>
+        <source srcset="/brand/kotrim-mark-64.webp" type="image/webp" />
+        <img src="/brand/kotrim-mark-64.png" alt="" width="34" height="34" decoding="async" />
+      </picture>
+      <span class="nav__brand-name">Kotrim</span>
+    </a>
+
+    <nav class="nav__links" [class.nav__links--open]="isMenuOpen()" aria-label="Seções">
+      <a href="#recursos" (click)="closeMenu()">Recursos</a>
+      <a href="#como-funciona" (click)="closeMenu()">Como funciona</a>
+      <a href="#planos" (click)="closeMenu()">Planos</a>
+      <a href="#duvidas" (click)="closeMenu()">Dúvidas</a>
+
+      <div class="nav__actions">
+        <a class="nav__login" routerLink="/auth/login" (click)="closeMenu()">Entrar</a>
+        <a class="nav__cta" routerLink="/auth/register" (click)="closeMenu()">Testar 7 dias grátis</a>
+      </div>
+    </nav>
+
+    <button
+      class="nav__burger"
+      type="button"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="isMenuOpen()"
+      aria-label="Abrir menu"
+    >
+      <span class="nav__burger-bar" [class.nav__burger-bar--x1]="isMenuOpen()"></span>
+      <span class="nav__burger-bar" [class.nav__burger-bar--hide]="isMenuOpen()"></span>
+      <span class="nav__burger-bar" [class.nav__burger-bar--x2]="isMenuOpen()"></span>
+    </button>
+  </div>
+</header>

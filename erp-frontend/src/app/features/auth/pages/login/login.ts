@@ -9,6 +9,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AuthAside } from '../../components/auth-aside/auth-aside';
+import { PlanFeaturesService } from '../../../../core/services/plan-features.service';
 
 @Component({
   selector: 'app-login',
@@ -20,13 +22,14 @@ import { AuthService } from '../../../../core/services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    AuthAside,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.scss',
 })
 export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly planFeatures = inject(PlanFeaturesService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly snackBar = inject(MatSnackBar);
@@ -50,7 +53,14 @@ export class Login {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/dashboard';
-        void this.router.navigateByUrl(returnUrl);
+
+        // The plan's features must be known before navigating: planFeatureGuard
+        // treats "not loaded" as "no access", so going straight to /dashboard
+        // would bounce the user to /subscription on their own login.
+        this.planFeatures.load().subscribe({
+          next: () => void this.router.navigateByUrl(returnUrl),
+          error: () => void this.router.navigateByUrl(returnUrl),
+        });
       },
       error: (error: HttpErrorResponse) => {
         this.isSubmitting.set(false);

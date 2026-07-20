@@ -1,0 +1,44 @@
+// Landing-only design tokens.
+//
+// Scoped to .landing rather than :root so the marketing site can commit to its
+// own palette without leaking into the ERP, which has its own light/dark tokens
+// in src/styles.scss.
+//
+// The palette is sampled from the logo itself: #011C63 is the exact navy at the
+// centre of the mark, and the electric blue is its companion. Neutrals are
+// biased cool (toward the blue) so greys read as chosen rather than inherited.
+//
+// The landing deliberately commits to a single light-with-dark-sections world:
+// the supplied logo artwork is drawn white-on-dark internally and cannot be
+// recoloured for a dark theme without destroying the car illustration, so a
+// theme toggle here would ship a broken logo half the time.
+.landing {
+  --navy-950: #010b28;
+  --navy-900: #011c63;
+  --navy-800: #06297f;
+  --blue-600: #1b4de4;
+  --blue-500: #2d6bff;
+  --blue-100: #dde7ff;
+
+  --ink: #0b0d12;
+  --muted: #5a6272;
+  --faint: #8b93a5;
+  --paper: #ffffff;
+  --mist: #f4f6fa;
+  --line: #e3e8f0;
+  --line-soft: #eef1f6;
+
+  --ok: #12b76a;
+
+  --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --shell: min(1160px, 100% - 48px);
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+
+  @media (max-width: 640px) {
+    --shell: min(1160px, 100% - 32px);
+  }
+}

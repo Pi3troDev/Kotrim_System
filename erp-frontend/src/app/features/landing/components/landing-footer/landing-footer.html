@@ -1,0 +1,55 @@
+<footer class="foot">
+  <div class="foot__inner">
+    <div class="foot__brand">
+      <picture>
+        <source srcset="/brand/kotrim-lockup-280.webp" type="image/webp" />
+        <img
+          src="/brand/kotrim-lockup-280.png"
+          alt="Kotrim"
+          width="140"
+          height="29"
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+      <p class="foot__pitch">
+        O sistema que organiza oficinas mecânicas brasileiras. Ordens de serviço, estoque, financeiro e agenda em
+        um só lugar.
+      </p>
+    </div>
+
+    <nav class="foot__cols" aria-label="Rodapé">
+      <div class="foot__col">
+        <h3>Produto</h3>
+        <a href="#recursos">Recursos</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#planos">Planos e preços</a>
+        <a href="#duvidas">Dúvidas frequentes</a>
+      </div>
+
+      <div class="foot__col">
+        <h3>Conta</h3>
+        <a routerLink="/auth/register">Criar conta</a>
+        <a routerLink="/auth/login">Entrar</a>
+        <a routerLink="/auth/forgot-password">Esqueci minha senha</a>
+      </div>
+
+      <div class="foot__col">
+        <h3>Contato</h3>
+        <a href="https://wa.me/5511989985090" target="_blank" rel="noopener">WhatsApp (11) 98998-5090</a>
+        <a href="mailto:contato@kotrim.com.br">contato&#64;kotrim.com.br</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="foot__bar">
+    <div class="foot__bar-inner">
+      <span>© {{ year }} Kotrim. Todos os direitos reservados.</span>
+      <nav class="foot__legal" aria-label="Legal">
+        <a routerLink="/termos">Termos de Uso</a>
+        <a routerLink="/privacidade">Política de Privacidade</a>
+      </nav>
+      <span class="foot__made">Feito no Brasil 🇧🇷</span>
+    </div>
+  </div>
+</footer>

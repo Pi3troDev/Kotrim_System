@@ -1,0 +1,264 @@
+:host {
+  display: contents;
+}
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  // Starts invisible over the navy hero and materialises on scroll, so the hero
+  // reads as one uninterrupted field on load.
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    backdrop-filter 220ms ease;
+
+  &--solid {
+    background: rgb(255 255 255 / 0.86);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom-color: var(--line);
+
+    .nav__brand-name,
+    .nav__links > a,
+    .nav__login {
+      color: var(--ink);
+    }
+
+    .nav__burger-bar {
+      background: var(--ink);
+    }
+  }
+}
+
+.nav__inner {
+  width: var(--shell);
+  margin: 0 auto;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+
+  // The mark sits on a white chip in both nav states.
+  //
+  // The supplied artwork is near-black line work meant for light backgrounds —
+  // over the navy hero it simply disappeared. It cannot be recoloured either:
+  // the car is drawn as white lines on a dark body, so inverting the neutrals
+  // destroys the illustration. A chip keeps the real artwork legible on any
+  // ground, which is what brands with light-only logos actually do.
+  picture {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(1 11 40 / 0.18);
+  }
+
+  img {
+    display: block;
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.nav--solid .nav__brand picture {
+  // On the white bar the chip would vanish into the background; a hairline
+  // keeps the mark's edges from bleeding into the nav.
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.nav__brand-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  transition: color 220ms ease;
+}
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: auto;
+
+  > a {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: rgb(255 255 255 / 0.82);
+    text-decoration: none;
+    transition: color 160ms ease;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.nav--solid .nav__links > a:hover {
+  color: var(--blue-600);
+}
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.nav__login {
+  font-size: 14.5px;
+  font-weight: 550;
+  color: #fff;
+  text-decoration: none;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+
+  &:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+}
+
+.nav--solid .nav__login:hover {
+  background: var(--mist);
+}
+
+.nav__cta {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue-600);
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(1 28 99 / 0.25);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    background: var(--blue-500);
+    transform: translateY(-1px);
+  }
+}
+
+.nav__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.nav__burger-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: #fff;
+  transition:
+    transform 200ms ease,
+    opacity 160ms ease,
+    background 220ms ease;
+
+  &--x1 {
+    transform: translateY(7px) rotate(45deg);
+  }
+  &--x2 {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+  &--hide {
+    opacity: 0;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+  .nav__burger {
+    display: flex;
+  }
+
+  .nav__links {
+    // Plainly hidden until opened. A grid-rows or max-height accordion animates
+    // nicely with a single child, but this panel has several — the collapse
+    // would only apply to the first row and the rest would spill.
+    display: none;
+    position: fixed;
+    inset: 68px 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 24px 24px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 12px 32px rgb(11 13 18 / 0.08);
+    max-height: calc(100dvh - 68px);
+    overflow-y: auto;
+
+    &--open {
+      display: flex;
+    }
+
+    > a {
+      color: var(--ink);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 16px;
+    }
+  }
+
+  .nav__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 18px 0 0;
+  }
+
+  .nav__login {
+    color: var(--ink);
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .nav__cta {
+    text-align: center;
+    padding: 13px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .nav__cta,
+  .nav__burger-bar,
+  .nav__links {
+    transition: none;
+  }
+}

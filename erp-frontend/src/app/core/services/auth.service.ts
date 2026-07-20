@@ -55,6 +55,11 @@ export class AuthService {
     this.user.set(session.user);
   }
 
+  /** Patches the in-memory session user (e.g. after an avatar upload) without requiring a new login. */
+  updateCurrentUser(patch: Partial<AuthenticatedUser>): void {
+    this.user.update((current) => (current ? { ...current, ...patch } : current));
+  }
+
   clearSession(): void {
     this.accessToken.set(null);
     this.user.set(null);

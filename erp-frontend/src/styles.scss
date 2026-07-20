@@ -3,6 +3,14 @@
 // additional layer of semantic design tokens (`--surface`, `--border`, ...)
 // so custom, non-Material UI (sidebar, topbar, dashboard cards) stays in
 // lockstep with Material components and with dark mode.
+// Landing page: tokens + primitives shared across its components.
+// Both are nested under `.landing`, so nothing here applies inside the ERP.
+@use 'app/features/landing/landing.tokens.scss' as landing-tokens;
+@use 'app/features/landing/landing.global.scss' as landing-global;
+// Auth screens share one shell across five components; view encapsulation
+// would keep a per-component copy from ever reaching its siblings.
+@use 'app/features/auth/auth-shell.scss' as auth-shell;
+
 @use '@angular/material' as mat;
 
 html {

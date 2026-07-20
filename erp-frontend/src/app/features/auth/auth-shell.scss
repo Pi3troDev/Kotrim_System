@@ -1,0 +1,377 @@
+// Shared shell for every auth screen (login, register, forgot, reset, create).
+//
+// Global and nested under `.auth`, not a component stylesheet, for the same
+// reason the landing primitives are: view encapsulation would keep a copy in
+// one component from ever reaching the other four, and five near-identical
+// copies is exactly how they drift apart.
+//
+// Reuses the landing's tokens (`.auth` re-declares them) so the auth screens
+// and the marketing site are visibly the same product. Single-theme, matching
+// the landing — the logo artwork cannot survive a dark variant.
+.auth {
+  --navy-950: #010b28;
+  --navy-900: #011c63;
+  --navy-800: #06297f;
+  --blue-600: #1b4de4;
+  --blue-500: #2d6bff;
+  --blue-100: #dde7ff;
+
+  --ink: #0b0d12;
+  --muted: #5a6272;
+  --faint: #8b93a5;
+  --paper: #ffffff;
+  --mist: #f4f6fa;
+  --line: #e3e8f0;
+  --line-soft: #eef1f6;
+  --ok: #12b76a;
+  --danger: #f04438;
+
+  --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  min-height: 100dvh;
+  display: grid;
+  // Left: the form. Right: a navy panel carrying the pitch, so the screen reads
+  // as part of the marketing site rather than a bare login box.
+  grid-template-columns: 1fr 0.85fr;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.auth__main {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px 48px;
+  overflow-y: auto;
+}
+
+.auth__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  width: fit-content;
+
+  img {
+    display: block;
+    width: 34px;
+    height: 34px;
+  }
+
+  span {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+}
+
+.auth__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.auth__title {
+  font-family: var(--font-display);
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.auth__lead {
+  margin: 0 0 28px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.auth__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auth__submit {
+  width: 100%;
+  height: 46px;
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth__terms {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+
+  a {
+    color: var(--blue-600);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.auth__terms-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.auth__alt {
+  margin: 22px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+
+  a {
+    color: var(--blue-600);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.auth__helper {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 0;
+
+  a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--blue-600);
+    }
+  }
+}
+
+/* A plan carried in from the pricing page. */
+.auth__plan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  background: var(--mist);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.auth__plan-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.auth__plan-name {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.auth__plan-price {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy-900);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.auth__note {
+  display: flex;
+  gap: 9px;
+  margin: 0 0 24px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  background: var(--mist);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--blue-600);
+  }
+}
+
+.auth__error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* Centred state screens: sent, invalid link, etc. */
+.auth__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.auth__state-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue-100);
+  color: var(--navy-900);
+  margin-bottom: 4px;
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  &--ok {
+    background: color-mix(in srgb, var(--ok) 15%, transparent);
+    color: var(--ok);
+  }
+
+  &--warn {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
+  }
+}
+
+/* ── The navy pitch panel ─────────────────────────────────────────────── */
+
+// The component host must vanish from the grid: without this, the grid item is
+// <app-auth-aside> and the <aside> inside it only sizes to its own content —
+// leaving the navy panel floating half-height against white.
+app-auth-aside {
+  display: contents;
+}
+
+.auth__aside {
+  position: relative;
+  background:
+    radial-gradient(110% 90% at 80% 0%, var(--navy-800) 0%, transparent 55%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.auth__aside-quote {
+  font-family: var(--font-display);
+  margin: 0 0 20px;
+  font-size: 27px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+
+.auth__aside-lead {
+  margin: 0 0 32px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.66);
+  max-width: 38ch;
+}
+
+.auth__aside-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14.5px;
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--ok);
+  }
+}
+
+.auth :focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Mobile-first reality: the pitch panel is the first thing to go. */
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__aside {
+    display: none;
+  }
+
+  .auth__main {
+    padding: 24px 20px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth__row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .auth__title {
+    font-size: 26px;
+  }
+}

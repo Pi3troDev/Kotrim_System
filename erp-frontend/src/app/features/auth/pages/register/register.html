@@ -1,53 +1,143 @@
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-brand">
-      <span class="auth-brand__mark">K</span>
-      <span class="auth-brand__name">Kotrim System</span>
+<div class="auth">
+  <div class="auth__main">
+    <a class="auth__brand" routerLink="/" aria-label="Kotrim — página inicial">
+      <picture>
+        <source srcset="/brand/kotrim-mark-64.webp" type="image/webp" />
+        <img src="/brand/kotrim-mark-64.png" alt="" width="34" height="34" decoding="async" />
+      </picture>
+      <span>Kotrim</span>
+    </a>
+
+    <div class="auth__body">
+      <!-- Two funnels, two headings. Promising "7 dias grátis" to someone who
+           clicked "Assinar agora" would be a lie: that path grants no trial. -->
+      @if (isSubscribeFlow()) {
+        <h1 class="auth__title">Criar conta e assinar</h1>
+        <p class="auth__lead">Primeiro sua conta, depois o pagamento. O acesso libera na confirmação.</p>
+
+        @if (chosenPlan(); as plan) {
+          <div class="auth__plan">
+            <div>
+              <span class="auth__plan-label">Plano escolhido</span>
+              <span class="auth__plan-name">{{ plan.name }}</span>
+            </div>
+            <span class="auth__plan-price">
+              {{ plan.priceCents / 100 | currency: plan.currency : 'symbol' : '1.0-0' }}/mês
+            </span>
+          </div>
+        }
+
+        <p class="auth__note">
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M8 7.2v4M8 4.8v.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          <span>
+            Esta opção <strong>não inclui</strong> o teste grátis. Prefere experimentar antes?
+            <a routerLink="/auth/register">Comece pelos 7 dias grátis</a>.
+          </span>
+        </p>
+      } @else {
+        <h1 class="auth__title">Teste o Kotrim por 7 dias</h1>
+        <p class="auth__lead">Sem cartão de crédito. Todos os módulos liberados desde o primeiro minuto.</p>
+      }
+
+      <form class="auth__form" [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Nome da oficina</mat-label>
+          <input matInput formControlName="companyName" autocomplete="organization" />
+          @if (form.controls.companyName.hasError('required')) {
+            <mat-error>Informe o nome da oficina.</mat-error>
+          } @else if (form.controls.companyName.hasError('minlength')) {
+            <mat-error>Nome muito curto.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>CNPJ ou CPF</mat-label>
+          <input matInput formControlName="companyDocument" appDigitMask="cpfCnpj" inputmode="numeric" />
+          @if (form.controls.companyDocument.hasError('required')) {
+            <mat-error>Informe o CNPJ ou CPF.</mat-error>
+          } @else if (form.controls.companyDocument.hasError('minlength')) {
+            <mat-error>Documento incompleto.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Seu nome</mat-label>
+          <input matInput formControlName="adminName" autocomplete="name" />
+          @if (form.controls.adminName.hasError('required')) {
+            <mat-error>Informe seu nome.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput type="email" formControlName="adminEmail" autocomplete="email" />
+          @if (form.controls.adminEmail.hasError('required')) {
+            <mat-error>Informe seu e-mail.</mat-error>
+          } @else if (form.controls.adminEmail.hasError('email')) {
+            <mat-error>E-mail inválido.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="adminPassword"
+            autocomplete="new-password"
+          />
+          <button
+            mat-icon-button
+            matIconSuffix
+            type="button"
+            (click)="hidePassword.set(!hidePassword())"
+            [attr.aria-label]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.adminPassword.hasError('required')) {
+            <mat-error>Crie uma senha.</mat-error>
+          } @else if (form.controls.adminPassword.hasError('minlength')) {
+            <mat-error>Use pelo menos 10 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-checkbox formControlName="acceptedTerms" class="auth__terms">
+          Li e concordo com os <a routerLink="/termos" target="_blank">Termos de Uso</a> e a
+          <a routerLink="/privacidade" target="_blank">Política de Privacidade</a>.
+        </mat-checkbox>
+        @if (form.controls.acceptedTerms.hasError('required') && form.controls.acceptedTerms.touched) {
+          <p class="auth__terms-error">É necessário aceitar os Termos de Uso e a Política de Privacidade.</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" class="auth__submit" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <mat-spinner diameter="20" />
+          } @else if (isSubscribeFlow()) {
+            Criar conta e ir para o pagamento
+          } @else {
+            Começar meus 7 dias grátis
+          }
+        </button>
+      </form>
+
+      <p class="auth__alt">
+        Já tem conta?
+        <a routerLink="/auth/login">Entrar</a>
+      </p>
     </div>
-
-    <h1 class="auth-title">Cadastre sua oficina</h1>
-    <p class="auth-subtitle">Crie a conta administradora da sua empresa.</p>
-
-    <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Nome da oficina</mat-label>
-        <input matInput formControlName="companyName" autocomplete="organization" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>CNPJ/CPF</mat-label>
-        <input matInput formControlName="companyDocument" appDigitMask="cpfCnpj" inputmode="numeric" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Seu nome</mat-label>
-        <input matInput formControlName="adminName" autocomplete="name" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>E-mail</mat-label>
-        <input matInput type="email" formControlName="adminEmail" autocomplete="email" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Senha</mat-label>
-        <input matInput type="password" formControlName="adminPassword" autocomplete="new-password" />
-        @if (form.controls.adminPassword.hasError('minlength')) {
-          <mat-error>Mínimo de 8 caracteres.</mat-error>
-        }
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" class="auth-submit" type="submit" [disabled]="isSubmitting()">
-        @if (isSubmitting()) {
-          <mat-spinner diameter="20" />
-        } @else {
-          Criar conta
-        }
-      </button>
-    </form>
-
-    <p class="auth-footer">
-      Já tem conta? <a routerLink="/auth/login">Entrar</a>
-    </p>
   </div>
+
+  @if (isSubscribeFlow()) {
+    <app-auth-aside
+      quote="Assine e comece hoje."
+      lead="Crie a conta, pague por Pix e liberamos o acesso assim que o pagamento for confirmado."
+      [points]="['Pagamento por Pix', 'Sem fidelidade', 'Troque de plano quando quiser']"
+    />
+  } @else {
+    <app-auth-aside />
+  }
 </div>

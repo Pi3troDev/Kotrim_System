@@ -1,0 +1,260 @@
+<div class="landing">
+  <app-landing-nav />
+
+  <main id="conteudo">
+    <!-- ── Hero ─────────────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <span class="hero__tag">Feito para oficinas brasileiras</span>
+          <h1 class="hero__title">Sua oficina inteira<br />em uma tela só.</h1>
+          <p class="hero__lead">
+            Ordens de serviço, clientes, veículos, estoque, financeiro e agenda — conectados. Pare de procurar o
+            orçamento no caderno e responda o cliente antes dele desligar o telefone.
+          </p>
+
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--lg" routerLink="/auth/register">Testar 7 dias grátis</a>
+            <a class="btn btn--glass btn--lg" href="#recursos">Ver o que faz</a>
+          </div>
+
+          <ul class="hero__proof">
+            <li>Sem cartão de crédito</li>
+            <li>Todos os módulos liberados no teste</li>
+            <li>Cancele quando quiser</li>
+          </ul>
+        </div>
+
+        <!-- Built in markup rather than shipped as a screenshot: it stays sharp
+             on any display, weighs nothing, and cannot go stale when the real
+             UI changes. -->
+        <div class="hero__product" aria-hidden="true">
+          <div class="app">
+            <div class="app__bar">
+              <span class="app__dot"></span><span class="app__dot"></span><span class="app__dot"></span>
+              <span class="app__url">kotrim.com.br/work-orders/1042</span>
+            </div>
+            <div class="app__body">
+              <aside class="app__side">
+                <span class="app__side-brand"></span>
+                @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+                  <span class="app__side-item" [class.app__side-item--on]="i === 3"></span>
+                }
+              </aside>
+              <div class="app__main">
+                <div class="app__head">
+                  <div>
+                    <span class="app__crumb">Ordem de Serviço</span>
+                    <strong class="app__title">OS #1042 · Civic 2019 · QRT-4B12</strong>
+                  </div>
+                  <span class="chip chip--progress">Em andamento</span>
+                </div>
+
+                <div class="app__grid">
+                  <div class="app__card">
+                    <span class="app__label">Cliente</span>
+                    <strong>Fernanda Lima</strong>
+                    <span class="app__sub">(11) 98••••-••32</span>
+                  </div>
+                  <div class="app__card">
+                    <span class="app__label">Mecânico</span>
+                    <strong>Carlos Nunes</strong>
+                    <span class="app__sub">Box 2</span>
+                  </div>
+                  <div class="app__card">
+                    <span class="app__label">Entrada</span>
+                    <strong>14/07</strong>
+                    <span class="app__sub">Previsão 17/07</span>
+                  </div>
+                </div>
+
+                <div class="app__panel">
+                  <div class="app__row app__row--head">
+                    <span>Item</span><span>Qtd</span><span>Valor</span>
+                  </div>
+                  <div class="app__row"><span>Pastilha de freio dianteira</span><span>2</span><span>R$ 189,90</span></div>
+                  <div class="app__row"><span>Disco de freio ventilado</span><span>2</span><span>R$ 420,00</span></div>
+                  <div class="app__row"><span>Mão de obra — freios</span><span>1</span><span>R$ 280,00</span></div>
+                  <div class="app__row app__row--total"><span>Total</span><span></span><span>R$ 1.499,80</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Benefits ─────────────────────────────────────────────────────── -->
+    <section class="benefits">
+      <div class="benefits__inner">
+        <header class="benefits__head" #reveal>
+          <span class="eyebrow">Por que sair do caderno</span>
+          <h2 class="section-title">O caderno funciona até o dia em que não funciona</h2>
+        </header>
+
+        <div class="benefits__grid">
+          @for (benefit of benefits; track benefit.title) {
+            <article class="benefit" #reveal>
+              <h3>{{ benefit.title }}</h3>
+              <p>{{ benefit.description }}</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Features ─────────────────────────────────────────────────────── -->
+    <section class="features" id="recursos">
+      <div class="features__inner">
+        <header class="features__head" #reveal>
+          <span class="eyebrow">Recursos</span>
+          <h2 class="section-title">Oito módulos que conversam entre si</h2>
+          <p class="section-lead">
+            A peça sai do estoque quando entra na OS. A OS vira receita no financeiro. O agendamento sabe qual
+            mecânico está livre. Nada é digitado duas vezes.
+          </p>
+        </header>
+
+        <div class="features__grid">
+          @for (module of modules; track module.key) {
+            <article class="feature" #reveal>
+              <span class="feature__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                  <path [attr.d]="module.icon" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3 class="feature__name">{{ module.name }}</h3>
+              <p class="feature__desc">{{ module.description }}</p>
+              <div class="feature__foot">
+                <span class="feature__tier" [class.feature__tier--base]="module.tier === 'Todos os planos'">
+                  {{ module.tier }}
+                </span>
+                @if (module.note) {
+                  <span class="feature__note">{{ module.note }}</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── How it works ─────────────────────────────────────────────────── -->
+    <section class="steps" id="como-funciona">
+      <div class="steps__inner">
+        <header class="steps__head" #reveal>
+          <span class="eyebrow">Como funciona</span>
+          <h2 class="section-title">Do cadastro ao primeiro serviço, hoje</h2>
+        </header>
+
+        <!-- Numbered because it is a real sequence: each step only makes sense
+             after the one before it. -->
+        <ol class="steps__list">
+          @for (step of steps; track step.title; let i = $index) {
+            <li class="step" #reveal>
+              <span class="step__num">{{ i + 1 }}</span>
+              <div class="step__body">
+                <h3>{{ step.title }}</h3>
+                <p>{{ step.description }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+      </div>
+    </section>
+
+    <!-- ── Pricing (real plans from the API) ────────────────────────────── -->
+    <app-landing-pricing />
+
+    <!-- ── Spreadsheet vs Kotrim ────────────────────────────────────────── -->
+    <section class="versus">
+      <div class="versus__inner">
+        <header class="versus__head" #reveal>
+          <span class="eyebrow">Planilha × Kotrim</span>
+          <h2 class="section-title">A diferença aparece num dia normal</h2>
+          <p class="section-lead">
+            Não é sobre a planilha ser ruim. É sobre o que ela não faz quando o telefone toca e o carro está no
+            elevador.
+          </p>
+        </header>
+
+        <div class="versus__table" #reveal>
+          <div class="versus__row versus__row--head" aria-hidden="true">
+            <span></span>
+            <span class="versus__col-label versus__col-label--old">Na planilha ou no caderno</span>
+            <span class="versus__col-label versus__col-label--new">
+              <picture>
+                <source srcset="/brand/kotrim-mark-64.webp" type="image/webp" />
+                <img src="/brand/kotrim-mark-64.png" alt="" width="18" height="18" loading="lazy" decoding="async" />
+              </picture>
+              Com o Kotrim
+            </span>
+          </div>
+
+          @for (row of comparison; track row.situation) {
+            <div class="versus__row">
+              <span class="versus__situation">{{ row.situation }}</span>
+
+              <span class="versus__cell versus__cell--old">
+                <svg class="versus__icon versus__icon--old" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M5 5l6 6M11 5l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                <span><span class="versus__sr">Na planilha:</span>{{ row.spreadsheet }}</span>
+              </span>
+
+              <span class="versus__cell versus__cell--new">
+                <svg class="versus__icon versus__icon--new" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M13 4.5 6.5 11 3 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span><span class="versus__sr">Com o Kotrim:</span>{{ row.kotrim }}</span>
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FAQ ──────────────────────────────────────────────────────────── -->
+    <section class="faq" id="duvidas">
+      <div class="faq__inner">
+        <header class="faq__head" #reveal>
+          <span class="eyebrow">Dúvidas</span>
+          <h2 class="section-title">O que perguntam antes de assinar</h2>
+        </header>
+
+        <!-- Native <details>: keyboard accessible, works before hydration, and
+             stays open for in-page search — all things a custom accordion has
+             to reimplement badly. -->
+        <div class="faq__list">
+          @for (item of faq; track item.question) {
+            <details class="faq__item" #reveal>
+              <summary class="faq__q">
+                {{ item.question }}
+                <svg class="faq__chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </summary>
+              <p class="faq__a">{{ item.answer }}</p>
+            </details>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Final CTA ────────────────────────────────────────────────────── -->
+    <section class="cta">
+      <div class="cta__inner" #reveal>
+        <h2 class="cta__title">Sete dias. Sua oficina de verdade dentro.</h2>
+        <p class="cta__lead">
+          Cadastre um cliente, abra uma OS, feche um orçamento. Se não fizer diferença até sexta, você não perdeu
+          nada além de dez minutos.
+        </p>
+        <a class="btn btn--primary btn--lg" routerLink="/auth/register">Criar minha conta grátis</a>
+        <p class="cta__fine">Sem cartão · Sem fidelidade · Todos os módulos liberados</p>
+      </div>
+    </section>
+  </main>
+
+  <app-landing-footer />
+</div>

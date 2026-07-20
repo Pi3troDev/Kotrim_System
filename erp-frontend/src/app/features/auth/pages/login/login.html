@@ -1,61 +1,75 @@
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-brand">
-      <span class="auth-brand__mark">K</span>
-      <span class="auth-brand__name">Kotrim System</span>
-    </div>
+<div class="auth">
+  <div class="auth__main">
+    <a class="auth__brand" routerLink="/" aria-label="Kotrim — página inicial">
+      <picture>
+        <source srcset="/brand/kotrim-mark-64.webp" type="image/webp" />
+        <img src="/brand/kotrim-mark-64.png" alt="" width="34" height="34" decoding="async" />
+      </picture>
+      <span>Kotrim</span>
+    </a>
 
-    <h1 class="auth-title">Entrar</h1>
-    <p class="auth-subtitle">Acesse o painel da sua oficina.</p>
+    <div class="auth__body">
+      <h1 class="auth__title">Entrar na sua oficina</h1>
+      <p class="auth__lead">Bem-vindo de volta. Use o e-mail e a senha da sua conta.</p>
 
-    <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>E-mail</mat-label>
-        <input matInput type="email" formControlName="email" autocomplete="email" />
-        @if (form.controls.email.hasError('required')) {
-          <mat-error>Informe seu e-mail.</mat-error>
-        }
-        @if (form.controls.email.hasError('email')) {
-          <mat-error>E-mail inválido.</mat-error>
-        }
-      </mat-form-field>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth__form">
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (form.controls.email.hasError('required')) {
+            <mat-error>Informe seu e-mail.</mat-error>
+          } @else if (form.controls.email.hasError('email')) {
+            <mat-error>E-mail inválido.</mat-error>
+          }
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Senha</mat-label>
-        <input
-          matInput
-          [type]="hidePassword() ? 'password' : 'text'"
-          formControlName="password"
-          autocomplete="current-password"
-        />
-        <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          (click)="hidePassword.set(!hidePassword())"
-          [attr.aria-label]="'Alternar visibilidade da senha'"
-        >
-          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <button
+            mat-icon-button
+            matIconSuffix
+            type="button"
+            (click)="hidePassword.set(!hidePassword())"
+            [attr.aria-label]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.password.hasError('required')) {
+            <mat-error>Informe sua senha.</mat-error>
+          } @else if (form.controls.password.hasError('minlength')) {
+            <mat-error>A senha tem pelo menos 8 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <p class="auth__helper">
+          <a routerLink="/auth/forgot-password">Esqueci minha senha</a>
+        </p>
+
+        <button mat-flat-button color="primary" type="submit" class="auth__submit" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Entrar
+          }
         </button>
-        @if (form.controls.password.hasError('required')) {
-          <mat-error>Informe sua senha.</mat-error>
-        }
-        @if (form.controls.password.hasError('minlength')) {
-          <mat-error>Mínimo de 8 caracteres.</mat-error>
-        }
-      </mat-form-field>
+      </form>
 
-      <button mat-flat-button color="primary" class="auth-submit" type="submit" [disabled]="isSubmitting()">
-        @if (isSubmitting()) {
-          <mat-spinner diameter="20" />
-        } @else {
-          Entrar
-        }
-      </button>
-    </form>
-
-    <p class="auth-footer">
-      Ainda não tem conta? <a routerLink="/auth/register">Cadastre sua oficina</a>
-    </p>
+      <p class="auth__alt">
+        Ainda não tem conta?
+        <a routerLink="/auth/register">Teste 7 dias grátis</a>
+      </p>
+    </div>
   </div>
+
+  <app-auth-aside
+    quote="Bom te ver de novo."
+    lead="Suas ordens de serviço, clientes e veículos estão exatamente onde você deixou."
+    [points]="['Histórico completo de cada veículo', 'Agenda e OS conectadas', 'Acesse de qualquer aparelho']"
+  />
 </div>
