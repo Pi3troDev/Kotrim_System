@@ -18,8 +18,11 @@ import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 import { QueryInventoryItemsDto } from './dto/query-inventory-items.dto';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('inventory')
+@RequiresFeature(PlanFeature.INVENTORY)
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}

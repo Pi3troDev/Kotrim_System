@@ -5,8 +5,11 @@ import type { AuthenticatedUser } from '../../common/interfaces/authenticated-us
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('accounts')
+@RequiresFeature(PlanFeature.FINANCE)
 @Controller('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}

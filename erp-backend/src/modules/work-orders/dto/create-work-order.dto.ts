@@ -24,6 +24,11 @@ export class CreateWorkOrderDto {
   @IsUUID()
   vehicleId: string;
 
+  @ApiPropertyOptional({ example: 'b3f5f7a0-...', description: 'Mechanic/technician responsible for this work order.' })
+  @IsOptional()
+  @IsUUID()
+  employeeId?: string;
+
   @ApiProperty({ example: 'Barulho estranho ao frear' })
   @IsString()
   @MinLength(3)

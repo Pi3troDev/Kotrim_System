@@ -14,6 +14,7 @@ const expenseInclude = Prisma.validator<Prisma.ExpenseDefaultArgs>()({
   include: {
     category: { select: { id: true, name: true } },
     account: { select: { id: true, name: true, type: true } },
+    employee: { select: { id: true, name: true } },
   },
 });
 type ExpenseWithRelations = Prisma.ExpenseGetPayload<typeof expenseInclude>;
@@ -43,6 +44,9 @@ export class ExpensesService {
     if (dto.accountId) {
       await this.assertAccountBelongsToCompany(companyId, dto.accountId);
     }
+    if (dto.employeeId) {
+      await this.assertEmployeeBelongsToCompany(companyId, dto.employeeId);
+    }
 
     if (dto.installments && dto.installments > 1) {
       return this.createInstallments(companyId, dto);
@@ -57,6 +61,7 @@ export class ExpensesService {
         paymentMethod: dto.paymentMethod,
         categoryId: dto.categoryId,
         accountId: dto.accountId,
+        employeeId: dto.employeeId,
         recurrenceFrequency: dto.recurrenceFrequency,
         recurringGroupId: dto.recurrenceFrequency ? randomUUID() : undefined,
         recurrenceEndDate: dto.recurrenceEndDate ? parseLocalDate(dto.recurrenceEndDate) : undefined,
@@ -155,6 +160,9 @@ export class ExpensesService {
     }
     if (dto.accountId) {
       await this.assertAccountBelongsToCompany(companyId, dto.accountId);
+    }
+    if (dto.employeeId) {
+      await this.assertEmployeeBelongsToCompany(companyId, dto.employeeId);
     }
 
     const updated = await this.prisma.expense.update({
@@ -307,6 +315,7 @@ export class ExpensesService {
             paymentMethod: dto.paymentMethod,
             categoryId: dto.categoryId,
             accountId: dto.accountId,
+            employeeId: dto.employeeId,
             installmentGroupId,
             installmentNumber: index + 1,
             installmentTotal: count,
@@ -359,12 +368,20 @@ export class ExpensesService {
     }
   }
 
+  private async assertEmployeeBelongsToCompany(companyId: string, employeeId: string): Promise<void> {
+    const employee = await this.prisma.employee.findFirst({ where: { id: employeeId, companyId, deletedAt: null } });
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+  }
+
   private serialize(expense: ExpenseWithRelations): Omit<Expense, 'amount' | 'paidAmount' | 'status'> & {
     amount: number;
     paidAmount: number;
     status: FinancialStatus;
     category: { id: string; name: string } | null;
     account: { id: string; name: string; type: string } | null;
+    employee: { id: string; name: string } | null;
   } {
     return {
       ...expense,

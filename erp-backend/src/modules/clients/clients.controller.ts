@@ -17,8 +17,11 @@ import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { QueryClientsDto } from './dto/query-clients.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('clients')
+@RequiresFeature(PlanFeature.CLIENTS)
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}

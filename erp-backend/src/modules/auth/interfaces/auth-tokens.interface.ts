@@ -13,6 +13,8 @@ export interface AuthenticatedSession {
     email: string;
     companyId: string;
     role: string;
+    avatarUrl: string | null;
+    isSuperAdmin: boolean;
   };
 }
 

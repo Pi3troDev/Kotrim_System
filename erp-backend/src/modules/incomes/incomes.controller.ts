@@ -19,8 +19,11 @@ import { UpdateIncomeDto } from './dto/update-income.dto';
 import { UpdateIncomeStatusDto } from './dto/update-income-status.dto';
 import { QueryIncomesDto } from './dto/query-incomes.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('incomes')
+@RequiresFeature(PlanFeature.FINANCE)
 @Controller('incomes')
 export class IncomesController {
   constructor(private readonly incomesService: IncomesService) {}

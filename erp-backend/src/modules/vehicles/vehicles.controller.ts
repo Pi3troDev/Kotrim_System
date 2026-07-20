@@ -17,8 +17,11 @@ import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { QueryVehiclesDto } from './dto/query-vehicles.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('vehicles')
+@RequiresFeature(PlanFeature.VEHICLES)
 @Controller('vehicles')
 export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, WorkOrderStatus } from '@prisma/client';
+import { AppointmentStatus, Prisma, WorkOrderStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+// This file has its own local addDays() further down; only startOfToday is borrowed.
+import { startOfToday } from '../../common/utils/date.util';
+import { PlanFeature } from '../billing/plan-features';
 import {
   DashboardKpi,
   DashboardMonthPoint,
@@ -55,24 +58,20 @@ interface MonthRange {
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getSummary(companyId: string): Promise<DashboardSummary> {
+  async getSummary(companyId: string, features: PlanFeature[]): Promise<DashboardSummary> {
     const currentMonth = monthRange(0);
     const previousMonth = monthRange(-1);
-    const last6Months = Array.from({ length: 6 }, (_, i) => monthRange(-(5 - i)));
     const warrantyWindowEnd = addDays(new Date(), 30);
+    const todayStart = startOfToday();
+    const todayEnd = addDays(todayStart, 1);
 
     const [
       openWorkOrdersCount,
       completedThisMonth,
       completedLastMonth,
-      revenueThisMonth,
-      revenueLastMonth,
-      expensesThisMonth,
-      expensesLastMonth,
+      todayAppointmentsCount,
+      vehiclesInShopGroups,
       statusGroups,
-      monthlySeries,
-      lowStockItems,
-      lowStockCount,
       upcomingWarranties,
       recentWorkOrders,
     ] = await Promise.all([
@@ -95,41 +94,25 @@ export class DashboardService {
           completedAt: { gte: previousMonth.start, lt: previousMonth.end },
         },
       }),
-      this.sumIncome(companyId, currentMonth),
-      this.sumIncome(companyId, previousMonth),
-      this.sumExpense(companyId, currentMonth),
-      this.sumExpense(companyId, previousMonth),
+      this.prisma.appointment.count({
+        where: {
+          companyId,
+          deletedAt: null,
+          status: { notIn: [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW] },
+          scheduledStart: { gte: todayStart, lt: todayEnd },
+        },
+      }),
+      // Distinct vehicles currently on an open work order — one car with three
+      // open orders is still one car in the shop.
+      this.prisma.workOrder.groupBy({
+        by: ['vehicleId'],
+        where: { companyId, deletedAt: null, status: { in: OPEN_STATUSES } },
+      }),
       this.prisma.workOrder.groupBy({
         by: ['status'],
         where: { companyId, deletedAt: null },
         _count: { _all: true },
       }),
-      Promise.all(
-        last6Months.map(async (month) => ({
-          month: month.key,
-          label: month.label,
-          revenue: await this.sumIncome(companyId, month),
-          expenses: await this.sumExpense(companyId, month),
-        })),
-      ),
-      this.prisma.$queryRaw<
-        { id: string; name: string; quantityInStock: Prisma.Decimal; minimumStock: Prisma.Decimal }[]
-      >(Prisma.sql`
-        SELECT "id", "name", "quantityInStock", "minimumStock"
-        FROM "InventoryItem"
-        WHERE "companyId" = ${companyId}::uuid
-          AND "deletedAt" IS NULL
-          AND "quantityInStock" <= "minimumStock"
-        ORDER BY ("minimumStock" - "quantityInStock") DESC
-        LIMIT 6
-      `),
-      this.prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
-        SELECT COUNT(*) as count
-        FROM "InventoryItem"
-        WHERE "companyId" = ${companyId}::uuid
-          AND "deletedAt" IS NULL
-          AND "quantityInStock" <= "minimumStock"
-      `),
       this.prisma.workOrder.findMany({
         where: {
           companyId,
@@ -160,24 +143,32 @@ export class DashboardService {
       count: statusCountByStatus.get(status) ?? 0,
     }));
 
-    const profitThisMonth = revenueThisMonth - expensesThisMonth;
-    const profitLastMonth = revenueLastMonth - expensesLastMonth;
+    // Gated sections are queried only when the plan owns them — an Essencial
+    // dashboard should not be paying for six months of income aggregation it
+    // will never render.
+    const financial = features.includes(PlanFeature.FINANCE)
+      ? await this.buildFinancialSection(companyId, currentMonth, previousMonth)
+      : null;
+
+    const stock = features.includes(PlanFeature.INVENTORY)
+      ? await this.buildStockSection(companyId)
+      : null;
 
     return {
       openWorkOrders: { value: openWorkOrdersCount },
       completedWorkOrders: toKpi(completedThisMonth, completedLastMonth),
-      revenue: toKpi(revenueThisMonth, revenueLastMonth),
-      expenses: toKpi(expensesThisMonth, expensesLastMonth),
-      profit: toKpi(profitThisMonth, profitLastMonth),
+      todayAppointments: { value: todayAppointmentsCount },
+      vehiclesInShop: { value: vehiclesInShopGroups.length },
       statusBreakdown,
-      monthlySeries: monthlySeries as DashboardMonthPoint[],
-      lowStockItems: lowStockItems.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantityInStock: Number(item.quantityInStock),
-        minimumStock: Number(item.minimumStock),
-      })),
-      lowStockCount: Number(lowStockCount[0]?.count ?? 0),
+
+      revenue: financial?.revenue ?? null,
+      expenses: financial?.expenses ?? null,
+      profit: financial?.profit ?? null,
+      monthlySeries: financial?.monthlySeries ?? null,
+
+      lowStockItems: stock?.lowStockItems ?? null,
+      lowStockCount: stock?.lowStockCount ?? null,
+
       upcomingWarranties: upcomingWarranties.map((wo) => ({
         id: wo.id,
         workOrderNumber: wo.number,
@@ -194,6 +185,68 @@ export class DashboardService {
         totalAmount: Number(wo.totalAmount),
         openedAt: wo.openedAt.toISOString(),
       })),
+    };
+  }
+
+  /** Only called when the plan includes FINANCE. */
+  private async buildFinancialSection(companyId: string, currentMonth: MonthRange, previousMonth: MonthRange) {
+    const last6Months = Array.from({ length: 6 }, (_, i) => monthRange(-(5 - i)));
+
+    const [revenueThisMonth, revenueLastMonth, expensesThisMonth, expensesLastMonth, monthlySeries] =
+      await Promise.all([
+        this.sumIncome(companyId, currentMonth),
+        this.sumIncome(companyId, previousMonth),
+        this.sumExpense(companyId, currentMonth),
+        this.sumExpense(companyId, previousMonth),
+        Promise.all(
+          last6Months.map(async (month) => ({
+            month: month.key,
+            label: month.label,
+            revenue: await this.sumIncome(companyId, month),
+            expenses: await this.sumExpense(companyId, month),
+          })),
+        ),
+      ]);
+
+    return {
+      revenue: toKpi(revenueThisMonth, revenueLastMonth),
+      expenses: toKpi(expensesThisMonth, expensesLastMonth),
+      profit: toKpi(revenueThisMonth - expensesThisMonth, revenueLastMonth - expensesLastMonth),
+      monthlySeries: monthlySeries as DashboardMonthPoint[],
+    };
+  }
+
+  /** Only called when the plan includes INVENTORY. */
+  private async buildStockSection(companyId: string) {
+    const [lowStockItems, lowStockCount] = await Promise.all([
+      this.prisma.$queryRaw<
+        { id: string; name: string; quantityInStock: Prisma.Decimal; minimumStock: Prisma.Decimal }[]
+      >(Prisma.sql`
+        SELECT "id", "name", "quantityInStock", "minimumStock"
+        FROM "InventoryItem"
+        WHERE "companyId" = ${companyId}::uuid
+          AND "deletedAt" IS NULL
+          AND "quantityInStock" <= "minimumStock"
+        ORDER BY ("minimumStock" - "quantityInStock") DESC
+        LIMIT 6
+      `),
+      this.prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+        SELECT COUNT(*) as count
+        FROM "InventoryItem"
+        WHERE "companyId" = ${companyId}::uuid
+          AND "deletedAt" IS NULL
+          AND "quantityInStock" <= "minimumStock"
+      `),
+    ]);
+
+    return {
+      lowStockItems: lowStockItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantityInStock: Number(item.quantityInStock),
+        minimumStock: Number(item.minimumStock),
+      })),
+      lowStockCount: Number(lowStockCount[0]?.count ?? 0),
     };
   }
 

@@ -26,12 +26,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User is no longer active');
     }
 
+    const isImpersonating = Boolean(payload.impersonatedBy);
+
     return {
       id: user.id,
       companyId: user.companyId,
       roleId: user.roleId,
       roleName: user.role.name,
       email: user.email,
+      // Forced off while impersonating. Support looking at a customer's account
+      // holds the customer's powers, not their own — otherwise a session meant
+      // to *see* what one tenant sees could still reach every other tenant, and
+      // start a further impersonation from inside this one.
+      isSuperAdmin: isImpersonating ? false : user.isSuperAdmin,
+      impersonatedBy: payload.impersonatedBy ?? null,
     };
   }
 }

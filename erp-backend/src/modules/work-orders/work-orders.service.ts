@@ -15,6 +15,7 @@ const workOrderInclude = Prisma.validator<Prisma.WorkOrderDefaultArgs>()({
   include: {
     client: { select: { id: true, name: true } },
     vehicle: { select: { id: true, plate: true, brand: true, model: true } },
+    employee: { select: { id: true, name: true } },
     items: { orderBy: { createdAt: 'asc' } },
     history: { orderBy: { changedAt: 'asc' } },
   },
@@ -25,6 +26,7 @@ const workOrderListInclude = Prisma.validator<Prisma.WorkOrderDefaultArgs>()({
   include: {
     client: { select: { id: true, name: true } },
     vehicle: { select: { id: true, plate: true, brand: true, model: true } },
+    employee: { select: { id: true, name: true } },
   },
 });
 type WorkOrderListItem = Prisma.WorkOrderGetPayload<typeof workOrderListInclude>;
@@ -40,6 +42,9 @@ export class WorkOrdersService {
   async create(companyId: string, userId: string, dto: CreateWorkOrderDto) {
     await this.assertClientBelongsToCompany(companyId, dto.clientId);
     await this.assertVehicleBelongsToClient(companyId, dto.vehicleId, dto.clientId);
+    if (dto.employeeId) {
+      await this.assertEmployeeBelongsToCompany(companyId, dto.employeeId);
+    }
 
     const items = dto.items ?? [];
     const { laborAmount, partsAmount } = this.sumItemsByType(items);
@@ -55,6 +60,7 @@ export class WorkOrdersService {
               companyId,
               clientId: dto.clientId,
               vehicleId: dto.vehicleId,
+              employeeId: dto.employeeId,
               number,
               reportedProblem: dto.reportedProblem,
               diagnosis: dto.diagnosis,
@@ -83,7 +89,7 @@ export class WorkOrdersService {
   }
 
   async findAll(companyId: string, query: QueryWorkOrdersDto): Promise<PaginatedResult<ReturnType<typeof this.serializeListItem>>> {
-    const { page, limit, search, status, clientId, vehicleId } = query;
+    const { page, limit, search, status, clientId, vehicleId, employeeId } = query;
     const searchAsNumber = search && /^\d+$/.test(search.trim()) ? Number(search.trim()) : undefined;
 
     const where: Prisma.WorkOrderWhereInput = {
@@ -92,6 +98,7 @@ export class WorkOrdersService {
       ...(status && { status }),
       ...(clientId && { clientId }),
       ...(vehicleId && { vehicleId }),
+      ...(employeeId && { employeeId }),
       ...(search && {
         OR: [
           { reportedProblem: { contains: search, mode: 'insensitive' } },
@@ -131,6 +138,9 @@ export class WorkOrdersService {
 
   async update(companyId: string, id: string, dto: UpdateWorkOrderDto) {
     const existing = await this.assertWorkOrderIsEditable(companyId, id);
+    if (dto.employeeId) {
+      await this.assertEmployeeBelongsToCompany(companyId, dto.employeeId);
+    }
 
     const data: Prisma.WorkOrderUpdateInput = { ...dto };
     if (dto.discountAmount !== undefined) {
@@ -380,6 +390,13 @@ export class WorkOrdersService {
     }
     if (vehicle.clientId !== clientId) {
       throw new BadRequestException('O veículo informado não pertence ao cliente informado.');
+    }
+  }
+
+  private async assertEmployeeBelongsToCompany(companyId: string, employeeId: string): Promise<void> {
+    const employee = await this.prisma.employee.findFirst({ where: { id: employeeId, companyId, deletedAt: null } });
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
     }
   }
 

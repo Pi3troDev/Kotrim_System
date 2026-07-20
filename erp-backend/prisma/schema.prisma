@@ -81,12 +81,107 @@ enum NotificationType {
   ERROR
 }
 
+/// Named after what happened, not after the CRUD verb behind it.
+///
+/// "SUBSCRIPTION_UPGRADED" is answerable by a person reading the table six
+/// months from now; "UPDATE on Subscription" is not. CREATE/UPDATE/DELETE stay
+/// for generic entity changes that have no story of their own.
 enum AuditAction {
+  // Session
+  LOGIN
+  LOGIN_FAILED
+  LOGOUT
+  // Account
+  COMPANY_REGISTERED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_CHANGED
+  // Billing
+  SUBSCRIPTION_CHECKOUT
+  SUBSCRIPTION_ACTIVATED
+  SUBSCRIPTION_RENEWED
+  SUBSCRIPTION_UPGRADED
+  SUBSCRIPTION_DOWNGRADED
+  SUBSCRIPTION_CANCELLED
+  SUBSCRIPTION_DATES_CHANGED
+  // Support
+  IMPERSONATION_STARTED
+  IMPERSONATION_ENDED
+  // LGPD
+  LEGAL_TERMS_ACCEPTED
+  LEGAL_DOCUMENT_PUBLISHED
+  COMPANY_DATA_EXPORTED
+  COMPANY_ANONYMIZED
+  // Generic
   CREATE
   UPDATE
   DELETE
-  LOGIN
-  LOGOUT
+}
+
+enum AuditResult {
+  SUCCESS
+  FAILURE
+}
+
+enum MailStatus {
+  SENT
+  FAILED
+  /// A message sent again by hand from the admin panel after a failure.
+  RESENT
+}
+
+enum PasswordTokenPurpose {
+  /// First password for an account created without one (super-admin bootstrap).
+  SETUP
+  /// "Forgot my password" flow.
+  RESET
+}
+
+enum SubscriptionStatus {
+  /// Registered and waiting for a first payment, with no trial. Set when a
+  /// company signs up through "Assinar agora" instead of the free trial: it has
+  /// never had access and does not get any until an admin confirms payment.
+  /// Distinct from EXPIRED, which means "had access and lost it".
+  PENDING
+  TRIAL
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+/// Billing gateways. MANUAL is the only one implemented today (Pix/Mercado Pago
+/// confirmed by hand in the admin panel); the others are declared up front so
+/// adding a real gateway is a new provider class, not a migration.
+enum BillingProvider {
+  MANUAL
+  STRIPE
+  MERCADO_PAGO
+  ASAAS
+}
+
+enum SubscriptionPaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum LegalDocumentType {
+  TERMS
+  PRIVACY
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -94,20 +189,27 @@ enum AuditAction {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Company {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String
-  document  String // CNPJ/CPF
-  email     String?
-  phone     String?
-  address   String?
-  city      String?
-  state     String?
-  zipCode   String?
-  logoUrl   String?
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                 String    @id @default(uuid()) @db.Uuid
+  name               String
+  document           String // CNPJ/CPF
+  email              String?
+  phone              String?
+  address            String?
+  city               String?
+  state              String?
+  zipCode            String?
+  logoUrl            String?
+  businessHoursStart String?
+  businessHoursEnd   String?
+  workDays           Int[]     @default([1, 2, 3, 4, 5])
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+  /// Set once, by a super-admin, after PII has been scrubbed for an LGPD
+  /// deletion/anonymization request. Distinct from `deletedAt`: a soft-deleted
+  /// company still has its real data, an anonymized one never will again.
+  anonymizedAt       DateTime?
 
   users          User[]
   roles          Role[]
@@ -126,6 +228,9 @@ model Company {
   attachments    Attachment[]
   auditLogs      AuditLog[]
   stockMovements StockMovement[]
+  appointments   Appointment[]
+  subscription   Subscription?
+  mailLogs       MailLog[]
 
   @@unique([document])
   @@index([deletedAt])
@@ -172,17 +277,27 @@ model RolePermission {
 }
 
 model User {
-  id           String    @id @default(uuid()) @db.Uuid
-  companyId    String    @db.Uuid
-  roleId       String    @db.Uuid
-  name         String
-  email        String
-  passwordHash String
-  isActive     Boolean   @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  roleId                String    @db.Uuid
+  name                  String
+  email                 String
+  /// Null means "no password has ever been set" — the account can only be
+  /// entered by redeeming a SETUP token. Login must reject a null hash outright
+  /// rather than letting bcrypt decide.
+  passwordHash          String?
+  /// Stamped the first time a password is set. Its presence is what makes the
+  /// bootstrap flow un-repeatable.
+  passwordInitializedAt DateTime?
+  avatarUrl             String?
+  isActive              Boolean   @default(true)
+  /// Kotrim platform staff, not workshop staff: grants cross-tenant access to
+  /// the admin panel. Set by hand in the database, never through the API.
+  isSuperAdmin          Boolean   @default(false)
+  lastLoginAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
 
   company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   role           Role            @relation(fields: [roleId], references: [id])
@@ -193,9 +308,56 @@ model User {
   attachments    Attachment[]    @relation("AttachmentUploadedBy")
   stockMovements StockMovement[]
 
+  confirmedSubscriptionPayments SubscriptionPayment[] @relation("SubscriptionPaymentConfirmedBy")
+  passwordTokens                PasswordToken[]
+  mailLogs                      MailLog[]
+  auditLogsAsSuperAdmin         AuditLog[]            @relation("AuditLogSuperAdmin")
+  legalAcceptances              LegalAcceptance[]
+
   @@unique([email])
   @@index([companyId])
   @@index([deletedAt])
+}
+
+/// Every message the system tried to send.
+///
+/// Written whether the send succeeded or not — a FAILED row is the only trace
+/// of a welcome e-mail that never arrived, and the first thing support will
+/// look for. The template key doubles as an event name, so in-app notifications
+/// can later be driven from the same catalogue.
+model MailLog {
+  id                String     @id @default(uuid()) @db.Uuid
+  /// Nullable: platform-level mail need not belong to a workshop.
+  companyId         String?    @db.Uuid
+  userId            String?    @db.Uuid
+  /// MailTemplateKey — kept as a string so adding a template is not a migration.
+  template          String
+  /// The address actually used. Under redirect mode this is the test inbox, not
+  /// the customer — which is the point: the log shows what really happened.
+  to                String
+  subject           String
+  status            MailStatus
+  provider          String
+  /// The data the template was rendered from, so the message can be previewed
+  /// and resent without storing ~20 KB of HTML per row.
+  ///
+  /// Sensitive fields are stripped before this is written — see
+  /// REDACTED_PAYLOAD_FIELDS. A password-reset token living here would turn any
+  /// read of this table into a way to take over an account.
+  payload           Json?
+  /// Resend's message id, when it gave us one.
+  providerMessageId String?
+  error             String?
+  createdAt         DateTime   @default(now())
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+  @@index([template])
+  @@index([createdAt])
 }
 
 model RefreshToken {
@@ -207,6 +369,27 @@ model RefreshToken {
   replacedBy  String?   @db.Uuid
   createdByIp String?
   createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Single-use, expiring tokens for setting a password without knowing the old
+/// one. Serves both the super-admin bootstrap (SETUP) and "forgot my password"
+/// (RESET) — same security properties, so one table rather than two.
+///
+/// Only the SHA-256 hash is stored, exactly like RefreshToken: a leaked
+/// database snapshot must not be redeemable.
+model PasswordToken {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @db.Uuid
+  tokenHash String               @unique
+  purpose   PasswordTokenPurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime             @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -234,10 +417,11 @@ model Client {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  vehicles   Vehicle[]
-  workOrders WorkOrder[]
-  incomes    Income[]
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicles     Vehicle[]
+  workOrders   WorkOrder[]
+  incomes      Income[]
+  appointments Appointment[]
 
   @@index([companyId])
   @@index([companyId, name])
@@ -260,9 +444,10 @@ model Vehicle {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 
-  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  workOrders WorkOrder[]
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  workOrders   WorkOrder[]
+  appointments Appointment[]
 
   @@unique([companyId, plate])
   @@index([companyId])
@@ -287,9 +472,11 @@ model Employee {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user       User?       @relation(fields: [userId], references: [id])
-  workOrders WorkOrder[]
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User?         @relation(fields: [userId], references: [id])
+  workOrders      WorkOrder[]
+  payrollExpenses Expense[]
+  appointments    Appointment[]
 
   @@index([companyId])
   @@index([deletedAt])
@@ -324,13 +511,14 @@ model WorkOrder {
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?
 
-  company  Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client   Client             @relation(fields: [clientId], references: [id])
-  vehicle  Vehicle            @relation(fields: [vehicleId], references: [id])
-  employee Employee?          @relation(fields: [employeeId], references: [id])
-  items    WorkOrderItem[]
-  history  WorkOrderHistory[]
-  incomes  Income[]
+  company      Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client       Client             @relation(fields: [clientId], references: [id])
+  vehicle      Vehicle            @relation(fields: [vehicleId], references: [id])
+  employee     Employee?          @relation(fields: [employeeId], references: [id])
+  items        WorkOrderItem[]
+  history      WorkOrderHistory[]
+  incomes      Income[]
+  appointments Appointment[]
 
   @@unique([companyId, number])
   @@index([companyId])
@@ -474,6 +662,7 @@ model Expense {
   companyId           String               @db.Uuid
   categoryId          String?              @db.Uuid
   accountId           String?              @db.Uuid
+  employeeId          String?              @db.Uuid
   description         String
   amount              Decimal              @db.Decimal(12, 2)
   paidAmount          Decimal              @default(0) @db.Decimal(12, 2)
@@ -494,6 +683,7 @@ model Expense {
   company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id])
   account  Account?  @relation(fields: [accountId], references: [id])
+  employee Employee? @relation(fields: [employeeId], references: [id])
   payments Payment[]
 
   @@index([companyId])
@@ -502,6 +692,7 @@ model Expense {
   @@index([deletedAt])
   @@index([installmentGroupId])
   @@index([recurringGroupId])
+  @@index([employeeId])
 }
 
 model Income {
@@ -590,6 +781,39 @@ model Payment {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// Agenda
+// ─────────────────────────────────────────────────────────────────────────
+
+model Appointment {
+  id             String            @id @default(uuid()) @db.Uuid
+  companyId      String            @db.Uuid
+  employeeId     String            @db.Uuid
+  clientId       String?           @db.Uuid
+  vehicleId      String?           @db.Uuid
+  workOrderId    String?           @db.Uuid
+  title          String
+  description    String?
+  scheduledStart DateTime
+  scheduledEnd   DateTime
+  status         AppointmentStatus @default(SCHEDULED)
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  deletedAt      DateTime?
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee  Employee   @relation(fields: [employeeId], references: [id])
+  client    Client?    @relation(fields: [clientId], references: [id])
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id])
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
+
+  @@index([companyId])
+  @@index([employeeId])
+  @@index([scheduledStart])
+  @@index([deletedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Cross-cutting: notifications, attachments, audit log
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -634,22 +858,182 @@ model Attachment {
   @@index([entityType, entityId])
 }
 
+/// Who did what, to whom, from where.
+///
+/// Everything is nullable except the action and the result, because the most
+/// interesting rows are the ones with holes: a failed login for an address that
+/// has no account has no user and no company, and refusing to record it would
+/// blind exactly the case worth watching.
 model AuditLog {
-  id        String      @id @default(uuid()) @db.Uuid
-  companyId String      @db.Uuid
-  userId    String?     @db.Uuid
-  action    AuditAction
-  entity    String
-  entityId  String?     @db.Uuid
-  changes   Json?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime    @default(now())
+  id           String      @id @default(uuid()) @db.Uuid
+  /// Null for platform-level actions and for failures on unknown accounts.
+  companyId    String?     @db.Uuid
+  /// The account the action is *about*.
+  userId       String?     @db.Uuid
+  /// Set when Kotrim staff performed this — including everything done while
+  /// impersonating, so an action taken "as" a customer is never mistaken for
+  /// one the customer took themselves.
+  superAdminId String?     @db.Uuid
+  action       AuditAction
+  result       AuditResult @default(SUCCESS)
+  entity       String
+  entityId     String?     @db.Uuid
+  /// Free-form detail: what changed, or why it failed. Never credentials.
+  changes      Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user    User?   @relation(fields: [userId], references: [id])
+  company    Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  superAdmin User?    @relation("AuditLogSuperAdmin", fields: [superAdminId], references: [id], onDelete: SetNull)
 
   @@index([companyId])
+  @@index([userId])
+  @@index([superAdminId])
+  @@index([action])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// LGPD: Terms of Use, Privacy Policy, and their acceptance record
+// ─────────────────────────────────────────────────────────────────────────
+
+/// A published version of the Terms of Use or the Privacy Policy.
+///
+/// Versioned rather than edited in place: once someone has accepted version
+/// "2026-07-17", that exact text must stay retrievable even after a newer one
+/// replaces it as active, or the acceptance record becomes a claim about text
+/// nobody can produce. Only one row per type is `isActive` at a time —
+/// enforced in `LegalDocumentService`, not the schema, because a partial
+/// unique index is more ceremony than a service-level check-then-write
+/// wrapped in a transaction needs here.
+model LegalDocument {
+  id          String            @id @default(uuid()) @db.Uuid
+  type        LegalDocumentType
+  /// A date-stamped label ("2026-07-17"), not semver: what matters to a user
+  /// re-reading this is *when* it changed, not how big the change was.
+  version     String
+  title       String
+  /// Pre-authored HTML, trusted the same way mail templates are: it comes
+  /// from `prisma/seed.ts` or a future admin editor, never from end-user
+  /// input, so the frontend renders it directly.
+  content     String
+  publishedAt DateTime          @default(now())
+  isActive    Boolean           @default(true)
+
+  acceptances LegalAcceptance[]
+
+  @@index([type, isActive])
+}
+
+/// One user's acceptance of one document version, with exactly what LGPD
+/// consent records need to be worth anything later: which version, when, and
+/// from where.
+model LegalAcceptance {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  documentId String   @db.Uuid
+  acceptedAt DateTime @default(now())
+  ipAddress  String?
+  userAgent  String?
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@index([documentId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Billing: the Kotrim SaaS subscription itself
+//
+// Not to be confused with the `Payment` model above, which is a workshop's own
+// finance record (a client paying an invoice). Everything here is about a
+// workshop paying *us* for access to the ERP.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Plan {
+  id          String          @id @default(uuid()) @db.Uuid
+  slug        String          @unique // "essencial" | "profissional" | "oficina-plus"
+  name        String
+  description String?
+  /// Cents, not Decimal: this is a catalogue price we display and copy onto a
+  /// payment row. No financial arithmetic happens on it, so an integer avoids
+  /// float/Decimal juggling for no benefit.
+  priceCents  Int
+  currency    String          @default("BRL")
+  interval    BillingInterval @default(MONTHLY)
+  features    String[]
+  /// null = unlimited.
+  maxUsers    Int?
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+model Subscription {
+  id        String  @id @default(uuid()) @db.Uuid
+  /// One subscription per company — the tenant's access to the whole ERP.
+  companyId String  @unique @db.Uuid
+  planId    String? @db.Uuid
+
+  status           SubscriptionStatus @default(TRIAL)
+  trialEndsAt      DateTime?
+  currentPeriodEnd DateTime?
+  cancelledAt      DateTime?
+
+  provider               BillingProvider @default(MANUAL)
+  /// Gateway hooks: unused while billing is manual, populated by a future
+  /// Stripe/Mercado Pago/Asaas provider without touching this schema.
+  providerCustomerId     String?
+  providerSubscriptionId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan     Plan?                 @relation(fields: [planId], references: [id])
+  payments SubscriptionPayment[]
+
+  @@index([status])
+  @@index([trialEndsAt])
+  @@index([currentPeriodEnd])
+}
+
+model SubscriptionPayment {
+  id                String                    @id @default(uuid()) @db.Uuid
+  subscriptionId    String                    @db.Uuid
+  amountCents       Int
+  currency          String                    @default("BRL")
+  status            SubscriptionPaymentStatus @default(PENDING)
+  provider          BillingProvider           @default(MANUAL)
+  /// Free-form for manual billing ("PIX", "MERCADO_PAGO"); the gateway's own
+  /// method label once a provider is wired up.
+  method            String?
+  /// Set by a gateway provider; always null for manual payments.
+  providerPaymentId String?
+  paidAt            DateTime?
+  /// The super-admin who confirmed a manual payment. Null for gateway payments,
+  /// which confirm themselves via webhook.
+  confirmedById     String?                   @db.Uuid
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  notes             String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  confirmedBy  User?        @relation("SubscriptionPaymentConfirmedBy", fields: [confirmedById], references: [id])
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([providerPaymentId])
 }

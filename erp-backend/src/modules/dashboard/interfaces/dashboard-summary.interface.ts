@@ -41,16 +41,32 @@ export interface DashboardRecentWorkOrder {
   openedAt: string;
 }
 
+/**
+ * The financial and stock sections are `null` — not zero, not empty — when the
+ * company's plan does not include FINANCE / INVENTORY. Null says "you do not
+ * have this module"; a zero would say "you have it and it is empty", which
+ * would put a misleading R$ 0,00 on an Essencial dashboard.
+ *
+ * The backend skips those queries entirely in that case, so this is not just a
+ * presentation concern.
+ */
 export interface DashboardSummary {
+  // Operational — every plan.
   openWorkOrders: { value: number };
   completedWorkOrders: DashboardKpi;
-  revenue: DashboardKpi;
-  expenses: DashboardKpi;
-  profit: DashboardKpi;
+  todayAppointments: { value: number };
+  vehiclesInShop: { value: number };
   statusBreakdown: DashboardStatusCount[];
-  monthlySeries: DashboardMonthPoint[];
-  lowStockItems: DashboardLowStockItem[];
-  lowStockCount: number;
   upcomingWarranties: DashboardWarrantyItem[];
   recentWorkOrders: DashboardRecentWorkOrder[];
+
+  // Requires PlanFeature.FINANCE.
+  revenue: DashboardKpi | null;
+  expenses: DashboardKpi | null;
+  profit: DashboardKpi | null;
+  monthlySeries: DashboardMonthPoint[] | null;
+
+  // Requires PlanFeature.INVENTORY.
+  lowStockItems: DashboardLowStockItem[] | null;
+  lowStockCount: number | null;
 }

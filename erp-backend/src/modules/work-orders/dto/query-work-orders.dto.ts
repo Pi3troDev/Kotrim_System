@@ -18,4 +18,9 @@ export class QueryWorkOrdersDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   vehicleId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter work orders assigned to a specific employee/mechanic' })
+  @IsOptional()
+  @IsUUID()
+  employeeId?: string;
 }

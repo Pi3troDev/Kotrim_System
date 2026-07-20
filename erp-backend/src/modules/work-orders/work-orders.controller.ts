@@ -20,8 +20,11 @@ import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { UpdateWorkOrderItemDto } from './dto/update-work-order-item.dto';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
 import { QueryWorkOrdersDto } from './dto/query-work-orders.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('work-orders')
+@RequiresFeature(PlanFeature.WORK_ORDERS)
 @Controller('work-orders')
 export class WorkOrdersController {
   constructor(private readonly workOrdersService: WorkOrdersService) {}

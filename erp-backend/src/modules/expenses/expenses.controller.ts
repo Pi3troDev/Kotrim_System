@@ -19,8 +19,11 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { UpdateExpenseStatusDto } from './dto/update-expense-status.dto';
 import { QueryExpensesDto } from './dto/query-expenses.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { RequiresFeature } from '../../common/decorators/requires-feature.decorator';
+import { PlanFeature } from '../billing/plan-features';
 
 @ApiTags('expenses')
+@RequiresFeature(PlanFeature.FINANCE)
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}

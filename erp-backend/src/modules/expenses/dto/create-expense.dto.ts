@@ -35,6 +35,11 @@ export class CreateExpenseDto {
   @IsUUID()
   accountId?: string;
 
+  @ApiPropertyOptional({ description: 'Employee this expense originates from — e.g. a payroll entry.' })
+  @IsOptional()
+  @IsUUID()
+  employeeId?: string;
+
   @ApiPropertyOptional({ example: 3, minimum: 2, maximum: 24, description: 'Splits amount into this many monthly installments. Mutually exclusive with recurrenceFrequency.' })
   @IsOptional()
   @IsInt()
