@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 // Shared shell for every auth screen (login, register, forgot, reset, create).
 //
 // Global and nested under `.auth`, not a component stylesheet, for the same
@@ -8,7 +10,23 @@
 // Reuses the landing's tokens (`.auth` re-declares them) so the auth screens
 // and the marketing site are visibly the same product. Single-theme, matching
 // the landing — the logo artwork cannot survive a dark variant.
+//
+// Pins Material's own M3 tokens to light here too: without this, a visitor
+// with a dark-mode OS gets `.dark-theme` on <html> (see ThemeService), which
+// flips `mat-form-field`/input text to a light-on-dark color meant for a dark
+// surface — rendered on this shell's permanently white card, that reads as
+// barely-visible light-grey text while typing.
 .auth {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$violet-palette,
+        theme-type: light,
+      ),
+    )
+  );
+
   --navy-950: #010b28;
   --navy-900: #011c63;
   --navy-800: #06297f;
