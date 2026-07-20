@@ -1,0 +1,137 @@
+<div class="agenda-board">
+  <header class="agenda-board__header">
+    <div>
+      <h1 class="agenda-board__title">Agenda</h1>
+      <p class="agenda-board__subtitle">
+        {{ appointments().length }} compromisso{{ appointments().length === 1 ? '' : 's' }} em {{ selectedDate() | date: "dd/MM/yyyy" }}
+      </p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Novo Agendamento
+    </button>
+  </header>
+
+  <div class="agenda-board__toolbar">
+    <div class="agenda-board__day-nav">
+      <button mat-icon-button type="button" (click)="goToPreviousDay()" aria-label="Dia anterior">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <button mat-button type="button" class="agenda-board__date-trigger" (click)="dayPicker.open()">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ dateLabel() }}</span>
+      </button>
+      <input
+        class="agenda-board__hidden-date-input"
+        [matDatepicker]="dayPicker"
+        [value]="selectedDate()"
+        (dateChange)="onDateChange($event.value)"
+        tabindex="-1"
+        aria-hidden="true"
+      />
+      <mat-datepicker #dayPicker />
+
+      <button mat-icon-button type="button" (click)="goToNextDay()" aria-label="Próximo dia">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+
+      @if (!isToday()) {
+        <button mat-stroked-button type="button" class="agenda-board__today-btn" (click)="goToToday()">Hoje</button>
+      }
+    </div>
+
+    <mat-form-field appearance="outline" class="agenda-board__employee-filter">
+      <mat-label>Funcionário</mat-label>
+      <mat-select [formControl]="employeeControl">
+        <mat-option value="">Todos</mat-option>
+        @for (employee of employeeOptions(); track employee.id) {
+          <mat-option [value]="employee.id">{{ employee.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="agenda-board__table-card">
+    @if (isLoading()) {
+      <div class="agenda-board__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="agenda-board__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar a agenda.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (appointments().length === 0) {
+      <div class="agenda-board__state">
+        <mat-icon>event_busy</mat-icon>
+        <p>Nenhum compromisso agendado para este dia.</p>
+        <button mat-button color="primary" type="button" (click)="openCreateDialog()">Agendar um compromisso</button>
+      </div>
+    } @else {
+      <table mat-table [dataSource]="appointments()" class="agenda-board__table">
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef>Horário</th>
+          <td mat-cell *matCellDef="let appointment">
+            {{ appointment.scheduledStart | date: "HH:mm" }} – {{ appointment.scheduledEnd | date: "HH:mm" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Compromisso</th>
+          <td mat-cell *matCellDef="let appointment">{{ appointment.title }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="employee">
+          <th mat-header-cell *matHeaderCellDef>Funcionário</th>
+          <td mat-cell *matCellDef="let appointment">{{ appointment.employee.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="linked">
+          <th mat-header-cell *matHeaderCellDef>Cliente / Veículo / OS</th>
+          <td mat-cell *matCellDef="let appointment">
+            <div class="agenda-board__linked">
+              @if (appointment.client) {
+                <span>{{ appointment.client.name }}</span>
+              }
+              @if (appointment.vehicle) {
+                <span class="agenda-board__linked-secondary">{{ appointment.vehicle.plate }}</span>
+              }
+              @if (appointment.workOrder) {
+                <span class="agenda-board__wo-badge">OS #{{ appointment.workOrder.number }}</span>
+              }
+              @if (!appointment.client && !appointment.vehicle && !appointment.workOrder) {
+                <span>—</span>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let appointment">
+            <span class="agenda-board__status-chip" [style.--chip-color]="'var(' + statusMeta[appointment.status].colorVar + ')'">
+              {{ statusMeta[appointment.status].label }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let appointment" class="agenda-board__actions">
+            <button mat-icon-button type="button" (click)="openEditDialog(appointment)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(appointment)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    }
+  </div>
+</div>

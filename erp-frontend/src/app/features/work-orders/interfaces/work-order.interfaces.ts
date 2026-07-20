@@ -43,11 +43,17 @@ export interface WorkOrderVehicleSummary {
   model: string;
 }
 
+export interface WorkOrderEmployeeSummary {
+  id: string;
+  name: string;
+}
+
 export interface WorkOrderListItem {
   id: string;
   number: number;
   clientId: string;
   vehicleId: string;
+  employeeId?: string | null;
   status: WorkOrderStatus;
   reportedProblem: string;
   diagnosis?: string | null;
@@ -66,6 +72,7 @@ export interface WorkOrderListItem {
   updatedAt: string;
   client: WorkOrderClientSummary;
   vehicle: WorkOrderVehicleSummary;
+  employee?: WorkOrderEmployeeSummary | null;
 }
 
 export interface WorkOrder extends WorkOrderListItem {
@@ -83,12 +90,12 @@ export interface CreateWorkOrderItemPayload {
 export type UpdateWorkOrderItemPayload = Partial<CreateWorkOrderItemPayload>;
 
 export type CreateWorkOrderPayload = Pick<WorkOrder, 'clientId' | 'vehicleId' | 'reportedProblem'> &
-  Partial<Pick<WorkOrder, 'diagnosis' | 'observations' | 'discountAmount' | 'warrantyDays'>> & {
+  Partial<Pick<WorkOrder, 'employeeId' | 'diagnosis' | 'observations' | 'discountAmount' | 'warrantyDays'>> & {
     items?: CreateWorkOrderItemPayload[];
   };
 
 export type UpdateWorkOrderPayload = Partial<
-  Pick<WorkOrder, 'reportedProblem' | 'diagnosis' | 'observations' | 'discountAmount' | 'warrantyDays'>
+  Pick<WorkOrder, 'employeeId' | 'reportedProblem' | 'diagnosis' | 'observations' | 'discountAmount' | 'warrantyDays'>
 >;
 
 export interface UpdateWorkOrderStatusPayload {

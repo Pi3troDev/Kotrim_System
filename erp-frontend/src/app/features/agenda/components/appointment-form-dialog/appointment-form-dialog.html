@@ -1,0 +1,115 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Editar compromisso' : 'Novo agendamento' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="appointment-form">
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--full">
+      <mat-label>Título</mat-label>
+      <input matInput formControlName="title" />
+      @if (form.controls.title.hasError('required')) {
+        <mat-error>Descreva o compromisso.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field">
+      <mat-label>Funcionário</mat-label>
+      <mat-select formControlName="employeeId">
+        @for (employee of employeeOptions(); track employee.id) {
+          <mat-option [value]="employee.id">{{ employee.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.employeeId.hasError('required') && form.controls.employeeId.touched) {
+        <mat-error>Selecione o funcionário responsável.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field">
+      <mat-label>Cliente (opcional)</mat-label>
+      <input
+        matInput
+        [formControl]="clientSearchControl"
+        [matAutocomplete]="clientAuto"
+        placeholder="Busque pelo nome do cliente"
+      />
+      @if (isSearchingClients()) {
+        <mat-spinner matSuffix diameter="18" />
+      }
+      <mat-autocomplete #clientAuto="matAutocomplete" [displayWith]="displayClient">
+        @for (client of clientOptions(); track client.id) {
+          <mat-option [value]="client">{{ client.name }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field">
+      <mat-label>Veículo (opcional)</mat-label>
+      <mat-select formControlName="vehicleId" [disabled]="!selectedClientId() || isLoadingVehicles()">
+        <mat-option value="">Não informado</mat-option>
+        @for (vehicle of vehicleOptions(); track vehicle.id) {
+          <mat-option [value]="vehicle.id">{{ vehicle.plate }} — {{ vehicle.brand }} {{ vehicle.model }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field">
+      <mat-label>Ordem de serviço (opcional)</mat-label>
+      <mat-select formControlName="workOrderId" [disabled]="!selectedClientId() || isLoadingWorkOrders()">
+        <mat-option value="">Não vinculada</mat-option>
+        @for (workOrder of workOrderOptions(); track workOrder.id) {
+          <mat-option [value]="workOrder.id">OS #{{ workOrder.number }}</mat-option>
+        }
+      </mat-select>
+      @if (selectedClientId() && !isLoadingWorkOrders() && workOrderOptions().length === 0) {
+        <mat-hint>Este cliente não possui ordens de serviço.</mat-hint>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field">
+      <mat-label>Data</mat-label>
+      <input matInput [matDatepicker]="datePicker" formControlName="scheduledDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+      <mat-datepicker #datePicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--time">
+      <mat-label>Início</mat-label>
+      <input matInput type="time" formControlName="startTime" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--time">
+      <mat-label>Término</mat-label>
+      <input matInput type="time" formControlName="endTime" />
+    </mat-form-field>
+
+    @if (isEditMode) {
+      <mat-form-field appearance="outline" class="appointment-form__field">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statusOptions; track status) {
+            <mat-option [value]="status">{{ statusMeta[status].label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--full">
+      <mat-label>Descrição</mat-label>
+      <textarea matInput formControlName="description" rows="2"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--full">
+      <mat-label>Observações</mat-label>
+      <textarea matInput formControlName="notes" rows="2"></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        {{ isEditMode ? 'Salvar alterações' : 'Criar agendamento' }}
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

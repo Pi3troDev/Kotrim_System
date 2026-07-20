@@ -19,6 +19,11 @@ export interface WorkOrderSummary {
   number: number;
 }
 
+export interface EmployeeSummary {
+  id: string;
+  name: string;
+}
+
 export interface AccountSummary {
   id: string;
   name: string;
@@ -73,6 +78,8 @@ export interface Expense {
   category?: CategorySummary | null;
   accountId?: string | null;
   account?: AccountSummary | null;
+  employeeId?: string | null;
+  employee?: EmployeeSummary | null;
   installmentGroupId?: string | null;
   installmentNumber?: number | null;
   installmentTotal?: number | null;

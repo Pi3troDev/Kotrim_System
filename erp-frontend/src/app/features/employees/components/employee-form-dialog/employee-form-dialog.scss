@@ -1,0 +1,32 @@
+.employee-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  padding-top: 4px;
+  min-width: 440px;
+
+  &__field {
+    width: 100%;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__hint {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  &__active-toggle {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .employee-form {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+}

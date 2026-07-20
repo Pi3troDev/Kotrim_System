@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -10,21 +9,24 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { WORK_ORDER_STATUS_META } from '../../../../shared/constants/work-order-status';
+import { EmployeesService } from '../../services/employees.service';
+import { Employee } from '../../interfaces/employee.interfaces';
+import {
+  EmployeeFormDialog,
+  EmployeeFormDialogData,
+} from '../../components/employee-form-dialog/employee-form-dialog';
 import { ConfirmDialog, ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog';
-import { WorkOrdersService } from '../../services/work-orders.service';
-import { WorkOrderListItem, WorkOrderStatus } from '../../interfaces/work-order.interfaces';
-import { WorkOrderFormDialog } from '../../components/work-order-form-dialog/work-order-form-dialog';
-import { EmployeesService } from '../../../employees/services/employees.service';
-import { Employee } from '../../../employees/interfaces/employee.interfaces';
 
 const DEFAULT_PAGE_SIZE = 20;
 
+type ActiveFilter = '' | 'true' | 'false';
+
 @Component({
-  selector: 'app-work-order-list',
+  selector: 'app-employee-list',
   imports: [
     ReactiveFormsModule,
     CurrencyPipe,
@@ -36,28 +38,23 @@ const DEFAULT_PAGE_SIZE = 20;
     MatSelectModule,
     MatIconModule,
     MatButtonModule,
+    MatChipsModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './work-order-list.html',
-  styleUrl: './work-order-list.scss',
+  templateUrl: './employee-list.html',
+  styleUrl: './employee-list.scss',
 })
-export class WorkOrderList implements OnInit, OnDestroy {
-  private readonly workOrdersService = inject(WorkOrdersService);
+export class EmployeeList implements OnInit, OnDestroy {
   private readonly employeesService = inject(EmployeesService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly router = inject(Router);
   private readonly destroyed$ = new Subject<void>();
 
-  readonly displayedColumns = ['number', 'client', 'vehicle', 'employee', 'status', 'total', 'openedAt', 'actions'];
+  readonly displayedColumns = ['name', 'position', 'contact', 'hiredAt', 'salary', 'status', 'actions'];
   readonly searchControl = new FormControl('', { nonNullable: true });
-  readonly statusControl = new FormControl<WorkOrderStatus | ''>('', { nonNullable: true });
-  readonly employeeControl = new FormControl<string>('', { nonNullable: true });
-  readonly statusMeta = WORK_ORDER_STATUS_META;
-  readonly statusOptions = Object.keys(WORK_ORDER_STATUS_META) as WorkOrderStatus[];
-  readonly employeeOptions = signal<Employee[]>([]);
+  readonly activeControl = new FormControl<ActiveFilter>('', { nonNullable: true });
 
-  readonly workOrders = signal<WorkOrderListItem[]>([]);
+  readonly employees = signal<Employee[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
   readonly limit = signal(DEFAULT_PAGE_SIZE);
@@ -67,10 +64,6 @@ export class WorkOrderList implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
 
-    this.employeesService.list({ page: 1, limit: 100 }).subscribe({
-      next: (result) => this.employeeOptions.set(result.data),
-    });
-
     this.searchControl.valueChanges
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroyed$))
       .subscribe(() => {
@@ -78,12 +71,7 @@ export class WorkOrderList implements OnInit, OnDestroy {
         this.load();
       });
 
-    this.statusControl.valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(() => {
-      this.page.set(1);
-      this.load();
-    });
-
-    this.employeeControl.valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(() => {
+    this.activeControl.valueChanges.pipe(takeUntil(this.destroyed$)).subscribe(() => {
       this.page.set(1);
       this.load();
     });
@@ -98,17 +86,18 @@ export class WorkOrderList implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.hasError.set(false);
 
-    this.workOrdersService
+    const activeValue = this.activeControl.value;
+
+    this.employeesService
       .list({
         page: this.page(),
         limit: this.limit(),
         search: this.searchControl.value || undefined,
-        status: this.statusControl.value || undefined,
-        employeeId: this.employeeControl.value || undefined,
+        isActive: activeValue === '' ? undefined : activeValue === 'true',
       })
       .subscribe({
         next: (result) => {
-          this.workOrders.set(result.data);
+          this.employees.set(result.data);
           this.total.set(result.meta.total);
           this.isLoading.set(false);
         },
@@ -125,27 +114,18 @@ export class WorkOrderList implements OnInit, OnDestroy {
     this.load();
   }
 
-  openDetail(workOrder: WorkOrderListItem): void {
-    this.router.navigate(['/work-orders', workOrder.id]);
-  }
-
   openCreateDialog(): void {
-    this.dialog
-      .open(WorkOrderFormDialog, { width: '520px' })
-      .afterClosed()
-      .subscribe((created: WorkOrderListItem | undefined) => {
-        if (created) {
-          this.router.navigate(['/work-orders', created.id]);
-        }
-      });
+    this.openFormDialog({});
   }
 
-  confirmDelete(workOrder: WorkOrderListItem, event: Event): void {
-    event.stopPropagation();
+  openEditDialog(employee: Employee): void {
+    this.openFormDialog({ employee });
+  }
 
+  confirmDelete(employee: Employee): void {
     const data: ConfirmDialogData = {
-      title: 'Excluir ordem de serviço',
-      message: `Tem certeza que deseja excluir a OS #${workOrder.number}? Essa ação não pode ser desfeita.`,
+      title: 'Excluir funcionário',
+      message: `Tem certeza que deseja excluir "${employee.name}"? Isso também encerra o lançamento de salário recorrente, se houver.`,
       confirmLabel: 'Excluir',
       danger: true,
     };
@@ -156,13 +136,24 @@ export class WorkOrderList implements OnInit, OnDestroy {
       .subscribe((confirmed: boolean) => {
         if (!confirmed) return;
 
-        this.workOrdersService.remove(workOrder.id).subscribe({
+        this.employeesService.remove(employee.id).subscribe({
           next: () => {
-            this.snackBar.open('Ordem de serviço excluída.', 'Fechar', { duration: 3000 });
+            this.snackBar.open('Funcionário excluído.', 'Fechar', { duration: 3000 });
             this.load();
           },
-          error: () => this.snackBar.open('Não foi possível excluir a ordem de serviço.', 'Fechar', { duration: 4000 }),
+          error: () => this.snackBar.open('Não foi possível excluir o funcionário.', 'Fechar', { duration: 4000 }),
         });
+      });
+  }
+
+  private openFormDialog(data: EmployeeFormDialogData): void {
+    this.dialog
+      .open(EmployeeFormDialog, { data, width: '520px' })
+      .afterClosed()
+      .subscribe((result: Employee | undefined) => {
+        if (result) {
+          this.load();
+        }
       });
   }
 }

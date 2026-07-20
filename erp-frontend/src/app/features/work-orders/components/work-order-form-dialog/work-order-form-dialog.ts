@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -14,6 +14,8 @@ import { ClientsService } from '../../../clients/services/clients.service';
 import { Client } from '../../../clients/interfaces/client.interfaces';
 import { VehiclesService } from '../../../vehicles/services/vehicles.service';
 import { Vehicle } from '../../../vehicles/interfaces/vehicle.interfaces';
+import { EmployeesService } from '../../../employees/services/employees.service';
+import { Employee } from '../../../employees/interfaces/employee.interfaces';
 import { WorkOrdersService } from '../../services/work-orders.service';
 import { WorkOrder } from '../../interfaces/work-order.interfaces';
 
@@ -34,10 +36,11 @@ type SelectedClient = Pick<Client, 'id' | 'name'>;
   templateUrl: './work-order-form-dialog.html',
   styleUrl: './work-order-form-dialog.scss',
 })
-export class WorkOrderFormDialog implements OnDestroy {
+export class WorkOrderFormDialog implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly clientsService = inject(ClientsService);
   private readonly vehiclesService = inject(VehiclesService);
+  private readonly employeesService = inject(EmployeesService);
   private readonly workOrdersService = inject(WorkOrdersService);
   private readonly dialogRef = inject(MatDialogRef<WorkOrderFormDialog>);
   private readonly snackBar = inject(MatSnackBar);
@@ -49,11 +52,13 @@ export class WorkOrderFormDialog implements OnDestroy {
   readonly selectedClientId = signal<string | null>(null);
   readonly vehicleOptions = signal<Vehicle[]>([]);
   readonly isLoadingVehicles = signal(false);
+  readonly employeeOptions = signal<Employee[]>([]);
 
   readonly clientSearchControl = this.fb.nonNullable.control<SelectedClient | string>('');
 
   readonly form = this.fb.nonNullable.group({
     vehicleId: ['', Validators.required],
+    employeeId: [''],
     reportedProblem: ['', [Validators.required, Validators.minLength(3)]],
   });
 
@@ -90,6 +95,12 @@ export class WorkOrderFormDialog implements OnDestroy {
       });
   }
 
+  ngOnInit(): void {
+    this.employeesService.list({ page: 1, limit: 100, isActive: true }).subscribe({
+      next: (result) => this.employeeOptions.set(result.data),
+    });
+  }
+
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
@@ -109,6 +120,7 @@ export class WorkOrderFormDialog implements OnDestroy {
       .create({
         clientId: this.selectedClientId()!,
         vehicleId: raw.vehicleId,
+        employeeId: raw.employeeId || undefined,
         reportedProblem: raw.reportedProblem.trim(),
       })
       .subscribe({

@@ -1,0 +1,77 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Editar funcionário' : 'Novo funcionário' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="employee-form">
+    <mat-form-field appearance="outline" class="employee-form__field employee-form__field--full">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" autocomplete="name" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Informe o nome do funcionário.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>CPF</mat-label>
+      <input matInput formControlName="document" appDigitMask="cpfCnpj" inputmode="numeric" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>Telefone</mat-label>
+      <input matInput formControlName="phone" appDigitMask="phone" inputmode="numeric" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>Cargo</mat-label>
+      <input matInput formControlName="position" placeholder="Ex.: Mecânico" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>Especialidade</mat-label>
+      <input matInput formControlName="specialty" placeholder="Ex.: Motores a diesel" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field employee-form__field--full">
+      <mat-label>E-mail</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" />
+      @if (form.controls.email.hasError('email')) {
+        <mat-error>E-mail inválido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>Data de admissão</mat-label>
+      <input matInput [matDatepicker]="hiredAtPicker" formControlName="hiredAt" />
+      <mat-datepicker-toggle matIconSuffix [for]="hiredAtPicker" />
+      <mat-datepicker #hiredAtPicker />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-form__field">
+      <mat-label>Salário (R$)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="salary" min="0" />
+      @if (form.controls.salary.hasError('min')) {
+        <mat-error>Informe um valor válido.</mat-error>
+      }
+    </mat-form-field>
+
+    <p class="employee-form__hint employee-form__field--full">
+      Definir ou alterar o salário cria/atualiza automaticamente um lançamento recorrente mensal no Financeiro.
+    </p>
+
+    @if (isEditMode) {
+      <div class="employee-form__field employee-form__field--full employee-form__active-toggle">
+        <mat-slide-toggle formControlName="isActive">Funcionário ativo</mat-slide-toggle>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        {{ isEditMode ? 'Salvar alterações' : 'Criar funcionário' }}
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

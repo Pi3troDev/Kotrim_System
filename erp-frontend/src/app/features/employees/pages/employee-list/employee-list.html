@@ -1,0 +1,123 @@
+<div class="employee-list">
+  <header class="employee-list__header">
+    <div>
+      <h1 class="employee-list__title">Funcionários</h1>
+      <p class="employee-list__subtitle">
+        {{ total() }} funcionário{{ total() === 1 ? '' : 's' }} cadastrado{{ total() === 1 ? '' : 's' }}
+      </p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+      Novo Funcionário
+    </button>
+  </header>
+
+  <div class="employee-list__toolbar">
+    <mat-form-field appearance="outline" class="employee-list__search">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="Buscar por nome, cargo, e-mail ou CPF" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="employee-list__active-filter">
+      <mat-label>Situação</mat-label>
+      <mat-select [formControl]="activeControl">
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="true">Ativos</mat-option>
+        <mat-option value="false">Inativos</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="employee-list__table-card">
+    @if (isLoading()) {
+      <div class="employee-list__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="employee-list__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar os funcionários.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else if (employees().length === 0) {
+      <div class="employee-list__state">
+        <mat-icon>badge</mat-icon>
+        <p>{{ searchControl.value ? 'Nenhum funcionário encontrado.' : 'Nenhum funcionário cadastrado ainda.' }}</p>
+        @if (!searchControl.value) {
+          <button mat-button color="primary" type="button" (click)="openCreateDialog()">Cadastrar o primeiro funcionário</button>
+        }
+      </div>
+    } @else {
+      <table mat-table [dataSource]="employees()" class="employee-list__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="position">
+          <th mat-header-cell *matHeaderCellDef>Cargo</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.position || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="contact">
+          <th mat-header-cell *matHeaderCellDef>Contato</th>
+          <td mat-cell *matCellDef="let employee">
+            <div class="employee-list__contact">
+              @if (employee.phone) {
+                <span>{{ employee.phone }}</span>
+              }
+              @if (employee.email) {
+                <span class="employee-list__contact-email">{{ employee.email }}</span>
+              }
+              @if (!employee.phone && !employee.email) {
+                <span>—</span>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="hiredAt">
+          <th mat-header-cell *matHeaderCellDef>Admissão</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.hiredAt ? (employee.hiredAt | date: 'dd/MM/yyyy') : '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="salary">
+          <th mat-header-cell *matHeaderCellDef>Salário</th>
+          <td mat-cell *matCellDef="let employee">{{ employee.salary != null ? (employee.salary | currency: 'BRL') : '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Situação</th>
+          <td mat-cell *matCellDef="let employee">
+            <span class="employee-list__status-chip" [class.employee-list__status-chip--inactive]="!employee.isActive">
+              {{ employee.isActive ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let employee" class="employee-list__actions">
+            <button mat-icon-button type="button" (click)="openEditDialog(employee)" aria-label="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button type="button" (click)="confirmDelete(employee)" aria-label="Excluir">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="total()"
+        [pageSize]="limit()"
+        [pageIndex]="page() - 1"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>

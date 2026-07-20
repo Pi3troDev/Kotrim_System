@@ -18,6 +18,7 @@ export interface WorkOrderQuery extends PaginationQuery {
   status?: WorkOrderStatus;
   clientId?: string;
   vehicleId?: string;
+  employeeId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,6 +33,7 @@ export class WorkOrdersService {
     if (query.status) params = params.set('status', query.status);
     if (query.clientId) params = params.set('clientId', query.clientId);
     if (query.vehicleId) params = params.set('vehicleId', query.vehicleId);
+    if (query.employeeId) params = params.set('employeeId', query.employeeId);
     return this.http.get<PaginatedResult<WorkOrderListItem>>(this.baseUrl, { params });
   }
 

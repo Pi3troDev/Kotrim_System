@@ -36,6 +36,16 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="wo-form__field">
+      <mat-label>Mecânico responsável</mat-label>
+      <mat-select formControlName="employeeId">
+        <mat-option value="">Não informado</mat-option>
+        @for (employee of employeeOptions(); track employee.id) {
+          <mat-option [value]="employee.id">{{ employee.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wo-form__field">
       <mat-label>Problema relatado</mat-label>
       <textarea matInput formControlName="reportedProblem" rows="3"></textarea>
       @if (form.controls.reportedProblem.hasError('required')) {

@@ -7,8 +7,8 @@ import { DashboardService } from '../../services/dashboard.service';
 import { DashboardSummary } from '../../interfaces/dashboard.interfaces';
 import { WORK_ORDER_STATUS_META } from '../../../../shared/constants/work-order-status';
 import { StatTile } from '../../../../shared/components/stat-tile/stat-tile';
-import { TrendChart } from '../../components/trend-chart/trend-chart';
-import { StatusBreakdown } from '../../components/status-breakdown/status-breakdown';
+import { TrendChart } from '../../../../shared/components/trend-chart/trend-chart';
+import { StatusBreakdown } from '../../../../shared/components/status-breakdown/status-breakdown';
 import { daysUntil, formatCompactNumber, formatCurrencyBRL, formatShortDate } from '../../../../shared/utils/format.util';
 
 @Component({

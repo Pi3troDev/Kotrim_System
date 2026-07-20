@@ -1,0 +1,58 @@
+<div class="wo-report">
+  <header class="wo-report__header">
+    <div>
+      <h1 class="wo-report__title">Relatórios</h1>
+      <p class="wo-report__subtitle">Ordens de Serviço — status, faturamento e ranking de mecânicos</p>
+    </div>
+  </header>
+
+  <app-reports-tabs />
+
+  <app-date-range-filter [initialFrom]="from()" [initialTo]="to()" (rangeChange)="onRangeChange($event)" />
+
+  @if (isLoading()) {
+    <div class="wo-report__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="wo-report__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar o relatório.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (report(); as r) {
+    <div class="wo-report__kpis">
+      <app-stat-tile label="OS concluídas" [value]="r.totals.completedCount.toString()" icon="task_alt" />
+      <app-stat-tile label="Faturamento gerado" [value]="(r.totals.revenue | currency: 'BRL') ?? ''" icon="payments" />
+      <app-stat-tile label="Ticket médio" [value]="(r.totals.averageTicket | currency: 'BRL') ?? ''" icon="receipt_long" />
+    </div>
+
+    <app-status-breakdown [data]="r.statusBreakdown" />
+
+    <div class="wo-report__ranking-card">
+      <h3 class="wo-report__ranking-title">Ranking de mecânicos</h3>
+      @if (r.mechanicRanking.length === 0) {
+        <p class="wo-report__ranking-empty">Nenhuma OS concluída com mecânico atribuído neste período.</p>
+      } @else {
+        <table class="wo-report__ranking-table">
+          <thead>
+            <tr>
+              <th>Mecânico</th>
+              <th>OS concluídas</th>
+              <th>Faturamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of r.mechanicRanking; track row.employeeId) {
+              <tr>
+                <td>{{ row.employeeName }}</td>
+                <td>{{ row.completedCount }}</td>
+                <td>{{ row.revenue | currency: 'BRL' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>

@@ -1,19 +1,9 @@
+import { MonthlyTrendPoint, StatusCount } from '../../../shared/interfaces/chart-data.interfaces';
+
 export interface DashboardKpi {
   value: number;
   previousValue: number;
   deltaPercent: number;
-}
-
-export interface DashboardStatusCount {
-  status: string;
-  count: number;
-}
-
-export interface DashboardMonthPoint {
-  month: string;
-  label: string;
-  revenue: number;
-  expenses: number;
 }
 
 export interface DashboardLowStockItem {
@@ -41,16 +31,26 @@ export interface DashboardRecentWorkOrder {
   openedAt: string;
 }
 
+/**
+ * Mirrors the backend shape: the financial and stock sections are `null` — not
+ * zero — when the plan does not include FINANCE / INVENTORY, and the backend
+ * skips those queries entirely. Rendering a R$ 0,00 there would tell an
+ * Essencial customer their revenue is zero, which is a lie.
+ */
 export interface DashboardSummary {
   openWorkOrders: { value: number };
   completedWorkOrders: DashboardKpi;
-  revenue: DashboardKpi;
-  expenses: DashboardKpi;
-  profit: DashboardKpi;
-  statusBreakdown: DashboardStatusCount[];
-  monthlySeries: DashboardMonthPoint[];
-  lowStockItems: DashboardLowStockItem[];
-  lowStockCount: number;
+  todayAppointments: { value: number };
+  vehiclesInShop: { value: number };
+  statusBreakdown: StatusCount[];
   upcomingWarranties: DashboardWarrantyItem[];
   recentWorkOrders: DashboardRecentWorkOrder[];
+
+  revenue: DashboardKpi | null;
+  expenses: DashboardKpi | null;
+  profit: DashboardKpi | null;
+  monthlySeries: MonthlyTrendPoint[] | null;
+
+  lowStockItems: DashboardLowStockItem[] | null;
+  lowStockCount: number | null;
 }

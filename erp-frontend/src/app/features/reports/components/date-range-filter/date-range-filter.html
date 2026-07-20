@@ -1,0 +1,19 @@
+<form [formGroup]="form" class="date-range-filter">
+  <mat-form-field appearance="outline" class="date-range-filter__field">
+    <mat-label>De</mat-label>
+    <input matInput [matDatepicker]="fromPicker" formControlName="from" />
+    <mat-datepicker-toggle matIconSuffix [for]="fromPicker" />
+    <mat-datepicker #fromPicker />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="date-range-filter__field">
+    <mat-label>Até</mat-label>
+    <input matInput [matDatepicker]="toPicker" formControlName="to" />
+    <mat-datepicker-toggle matIconSuffix [for]="toPicker" />
+    <mat-datepicker #toPicker />
+  </mat-form-field>
+
+  @if (form.controls.to.value && form.controls.from.value && form.controls.to.value < form.controls.from.value) {
+    <p class="date-range-filter__error">A data final deve ser depois da inicial.</p>
+  }
+</form>

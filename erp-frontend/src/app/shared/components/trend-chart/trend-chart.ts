@@ -1,6 +1,6 @@
 import { Component, computed, input, signal } from '@angular/core';
-import { DashboardMonthPoint } from '../../interfaces/dashboard.interfaces';
-import { formatCompactNumber, formatCurrencyBRL } from '../../../../shared/utils/format.util';
+import { MonthlyTrendPoint } from '../../interfaces/chart-data.interfaces';
+import { formatCompactNumber, formatCurrencyBRL } from '../../utils/format.util';
 
 const VIEW_WIDTH = 640;
 const VIEW_HEIGHT = 260;
@@ -12,7 +12,7 @@ interface PlottedPoint {
   x: number;
   revenueY: number;
   expensesY: number;
-  point: DashboardMonthPoint;
+  point: MonthlyTrendPoint;
 }
 
 @Component({
@@ -22,7 +22,9 @@ interface PlottedPoint {
   styleUrl: './trend-chart.scss',
 })
 export class TrendChart {
-  readonly data = input.required<DashboardMonthPoint[]>();
+  readonly data = input.required<MonthlyTrendPoint[]>();
+  readonly title = input('Faturamento vs. Despesas');
+  readonly subtitle = input('Últimos 6 meses');
 
   readonly hoverIndex = signal<number | null>(null);
 

@@ -57,6 +57,12 @@
   grid-template-columns: 2fr 1fr;
   gap: 16px;
   align-items: stretch;
+
+  // Without the revenue chart (plans with no Financeiro), the status breakdown
+  // would be stranded in a 1fr column with two thirds of the row empty.
+  &--single {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard__lists {

@@ -1,0 +1,88 @@
+<div class="inventory-report">
+  <header class="inventory-report__header">
+    <div>
+      <h1 class="inventory-report__title">Relatórios</h1>
+      <p class="inventory-report__subtitle">Estoque — valor total, itens críticos e movimentações</p>
+    </div>
+  </header>
+
+  <app-reports-tabs />
+
+  @if (isLoading()) {
+    <div class="inventory-report__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="inventory-report__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar o relatório.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (report(); as r) {
+    <div class="inventory-report__kpis">
+      <app-stat-tile label="Valor em estoque" [value]="(r.totals.stockValue | currency: 'BRL') ?? ''" icon="inventory_2" />
+      <app-stat-tile
+        label="Itens abaixo do mínimo"
+        [value]="r.totals.lowStockCount.toString()"
+        icon="warning_amber"
+        [positiveIsGood]="false"
+      />
+      <app-stat-tile label="Itens ativos" [value]="r.totals.activeItemsCount.toString()" icon="category" />
+    </div>
+
+    <div class="inventory-report__card">
+      <h3 class="inventory-report__card-title">Itens com estoque baixo</h3>
+      @if (r.lowStockItems.length === 0) {
+        <p class="inventory-report__card-empty">Nenhum item abaixo do estoque mínimo.</p>
+      } @else {
+        <table class="inventory-report__table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Em estoque</th>
+              <th>Mínimo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of r.lowStockItems; track item.id) {
+              <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantityInStock }}</td>
+                <td>{{ item.minimumStock }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <div class="inventory-report__card">
+      <div class="inventory-report__card-header">
+        <h3 class="inventory-report__card-title">Itens mais movimentados</h3>
+        <app-date-range-filter [initialFrom]="from()" [initialTo]="to()" (rangeChange)="onRangeChange($event)" />
+      </div>
+      @if (r.mostMovedItems.length === 0) {
+        <p class="inventory-report__card-empty">Nenhuma movimentação de estoque neste período.</p>
+      } @else {
+        <table class="inventory-report__table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Entradas</th>
+              <th>Saídas</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of r.mostMovedItems; track item.inventoryItemId) {
+              <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.totalIn }}</td>
+                <td>{{ item.totalOut }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>

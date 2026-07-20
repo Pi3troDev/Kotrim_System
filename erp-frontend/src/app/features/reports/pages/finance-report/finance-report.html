@@ -1,0 +1,77 @@
+<div class="finance-report">
+  <header class="finance-report__header">
+    <div>
+      <h1 class="finance-report__title">Relatórios</h1>
+      <p class="finance-report__subtitle">Financeiro — receitas, despesas e saldo por período</p>
+    </div>
+  </header>
+
+  <app-reports-tabs />
+
+  <app-date-range-filter [initialFrom]="from()" [initialTo]="to()" (rangeChange)="onRangeChange($event)" />
+
+  @if (isLoading()) {
+    <div class="finance-report__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="finance-report__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar o relatório.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (report(); as r) {
+    <div class="finance-report__kpis">
+      <app-stat-tile label="Receitas" [value]="(r.totals.income | currency: 'BRL') ?? ''" icon="trending_up" />
+      <app-stat-tile
+        label="Despesas"
+        [value]="(r.totals.expense | currency: 'BRL') ?? ''"
+        icon="trending_down"
+        [positiveIsGood]="false"
+      />
+      <app-stat-tile label="Saldo" [value]="(r.totals.balance | currency: 'BRL') ?? ''" icon="account_balance_wallet" />
+    </div>
+
+    <app-trend-chart [data]="r.monthlySeries" subtitle="Período selecionado" />
+
+    <div class="finance-report__categories">
+      <div class="finance-report__category-card">
+        <h3 class="finance-report__category-title">Despesas por categoria</h3>
+        @if (r.expensesByCategory.length === 0) {
+          <p class="finance-report__category-empty">Nenhuma despesa paga neste período.</p>
+        } @else {
+          <div class="finance-report__category-rows">
+            @for (row of r.expensesByCategory; track row.categoryId) {
+              <div class="finance-report__category-row">
+                <span class="finance-report__category-label">{{ row.categoryName }}</span>
+                <div class="finance-report__category-track">
+                  <div class="finance-report__category-bar finance-report__category-bar--expense" [style.width.%]="row.percent"></div>
+                </div>
+                <span class="finance-report__category-value">{{ row.total | currency: 'BRL' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="finance-report__category-card">
+        <h3 class="finance-report__category-title">Receitas por categoria</h3>
+        @if (r.incomesByCategory.length === 0) {
+          <p class="finance-report__category-empty">Nenhuma receita recebida neste período.</p>
+        } @else {
+          <div class="finance-report__category-rows">
+            @for (row of r.incomesByCategory; track row.categoryId) {
+              <div class="finance-report__category-row">
+                <span class="finance-report__category-label">{{ row.categoryName }}</span>
+                <div class="finance-report__category-track">
+                  <div class="finance-report__category-bar finance-report__category-bar--income" [style.width.%]="row.percent"></div>
+                </div>
+                <span class="finance-report__category-value">{{ row.total | currency: 'BRL' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

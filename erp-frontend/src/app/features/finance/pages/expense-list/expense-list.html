@@ -74,6 +74,9 @@
                 Recorrente
               </span>
             }
+            @if (expense.employee) {
+              <span class="expense-list__employee-badge">Folha: {{ expense.employee.name }}</span>
+            }
           </td>
         </ng-container>
 

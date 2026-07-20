@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
-import { DashboardStatusCount } from '../../interfaces/dashboard.interfaces';
-import { WORK_ORDER_STATUS_META } from '../../../../shared/constants/work-order-status';
+import { StatusCount } from '../../interfaces/chart-data.interfaces';
+import { WORK_ORDER_STATUS_META } from '../../constants/work-order-status';
 
 interface StatusRow {
   status: string;
@@ -17,7 +17,8 @@ interface StatusRow {
   styleUrl: './status-breakdown.scss',
 })
 export class StatusBreakdown {
-  readonly data = input.required<DashboardStatusCount[]>();
+  readonly data = input.required<StatusCount[]>();
+  readonly title = input('Ordens de Serviço por status');
 
   readonly total = computed(() => this.data().reduce((sum, item) => sum + item.count, 0));
 

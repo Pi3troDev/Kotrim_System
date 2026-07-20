@@ -1,10 +1,10 @@
-.expense-list {
+.agenda-board {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.expense-list__header {
+.agenda-board__header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -19,7 +19,7 @@
   }
 }
 
-.expense-list__title {
+.agenda-board__title {
   margin: 0;
   font-size: 24px;
   font-weight: 650;
@@ -27,42 +27,79 @@
   color: var(--text-primary);
 }
 
-.expense-list__subtitle {
+.agenda-board__subtitle {
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--text-secondary);
+  text-transform: capitalize;
 }
 
-.expense-list__kpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.expense-list__toolbar {
+.agenda-board__toolbar {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.agenda-board__day-nav {
+  display: flex;
   align-items: center;
+  gap: 4px;
+  position: relative;
 }
 
-.expense-list__search {
+.agenda-board__date-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  margin: 0 2px;
+  border-radius: var(--radius-md, 10px);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-tertiary);
+  }
+}
+
+.agenda-board__hidden-date-input {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.agenda-board__today-btn {
+  margin-left: 8px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.agenda-board__employee-filter {
   width: 100%;
-  max-width: 420px;
+  max-width: 220px;
 }
 
-.expense-list__status-filter {
-  width: 200px;
-}
-
-.expense-list__table-card {
+.agenda-board__table-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-.expense-list__table {
+.agenda-board__table {
   width: 100%;
   background: transparent;
 
@@ -86,53 +123,30 @@
   }
 }
 
-.expense-list__installment-badge {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border);
-  font-size: 11px;
-  font-weight: 600;
+.agenda-board__linked {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agenda-board__linked-secondary {
   color: var(--text-tertiary);
+  font-size: 12px;
 }
 
-.expense-list__recurring-badge {
+.agenda-board__wo-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--chart-4) 16%, transparent);
-  border: 1px solid transparent;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--chart-4);
-
-  mat-icon {
-    font-size: 13px;
-    width: 13px;
-    height: 13px;
-  }
-}
-
-.expense-list__employee-badge {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 6px;
+  width: fit-content;
   padding: 1px 7px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--chart-2) 16%, transparent);
-  border: 1px solid transparent;
   font-size: 11px;
   font-weight: 600;
   color: var(--chart-2);
 }
 
-.expense-list__status-chip {
+.agenda-board__status-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -144,14 +158,13 @@
   font-weight: 600;
 }
 
-.expense-list__actions {
+.agenda-board__actions {
   display: flex;
   justify-content: flex-end;
   gap: 2px;
-  white-space: nowrap;
 }
 
-.expense-list__state {
+.agenda-board__state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -170,11 +183,5 @@
   p {
     margin: 0;
     font-size: 14px;
-  }
-}
-
-@media (max-width: 700px) {
-  .expense-list__kpis {
-    grid-template-columns: 1fr;
   }
 }
