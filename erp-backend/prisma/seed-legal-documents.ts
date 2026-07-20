@@ -14,8 +14,7 @@ const VERSION = '2026-07-17';
 const TERMS_CONTENT = `
 <h2>1. Aceitação</h2>
 <p>Estes Termos de Uso regem o acesso e uso do Kotrim System ("Kotrim"), uma plataforma de gestão para oficinas
-mecânicas e autoelétricas, oferecida por <strong>[PREENCHER: razão social do Kotrim, CNPJ]</strong>
-("nós", "Kotrim"). Ao criar uma conta, você declara que leu, entendeu e concorda com estes Termos e com a
+mecânicas e autoelétricas, oferecida por ("nós", "Kotrim"). Ao criar uma conta, você declara que leu, entendeu e concorda com estes Termos e com a
 <a href="/privacidade">Política de Privacidade</a>.</p>
 
 <h2>2. Cadastro e conta</h2>
@@ -85,8 +84,7 @@ Kotrim para dirimir eventuais controvérsias, ressalvada disposição legal em c
 
 const PRIVACY_CONTENT = `
 <h2>1. Quem somos e nosso papel</h2>
-<p>Esta Política explica como o Kotrim System, oferecido por <strong>[PREENCHER: razão social do Kotrim,
-CNPJ]</strong>, trata dados pessoais. Em relação aos dados da sua conta (você e sua equipe), o Kotrim é
+<p>Esta Política explica como o Kotrim System, trata dados pessoais. Em relação aos dados da sua conta (você e sua equipe), o Kotrim é
 <strong>controlador</strong>. Em relação aos dados que você cadastra sobre os seus próprios clientes finais
 (nomes, veículos, contatos), o Kotrim atua apenas como <strong>operador</strong>, seguindo as instruções da sua
 oficina, que é a controladora desses dados.</p>
