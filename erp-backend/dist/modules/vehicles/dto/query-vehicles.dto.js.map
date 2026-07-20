@@ -1,1 +1,0 @@
-{"version":3,"file":"query-vehicles.dto.js","sourceRoot":"","sources":["../../../../src/modules/vehicles/dto/query-vehicles.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,6CAAsD;AACtD,qDAAqD;AACrD,mFAA8E;AAE9E,MAAa,gBAAiB,SAAQ,yCAAkB;IAItD,QAAQ,CAAU;CACnB;AALD,4CAKC;AADC;IAHC,IAAA,6BAAmB,EAAC,EAAE,WAAW,EAAE,gDAAgD,EAAE,CAAC;IACtF,IAAA,4BAAU,GAAE;IACZ,IAAA,wBAAM,GAAE;;kDACS"}

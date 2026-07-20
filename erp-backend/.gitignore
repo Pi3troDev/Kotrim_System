@@ -1,5 +1,16 @@
 node_modules
-# Keep environment variables out of version control
+# Keep environment variables out of version control.
+# Every .env* variant is ignored (they hold real connection strings and
+# secrets); .env.example is the only one that is committed.
 .env
+.env.*
+!.env.example
 
 /generated/prisma
+
+# Build output — Railway (and any other host) runs `nest build` itself on
+# deploy; a committed dist/ only goes stale and bloats the repo.
+/dist
+
+# User-uploaded files (company logos, avatars) — runtime data, not source
+/uploads
