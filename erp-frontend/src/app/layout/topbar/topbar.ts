@@ -10,9 +10,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/services/auth.service';
+import { PlanFeaturesService } from '../../core/services/plan-features.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationsService } from '../../shared/services/notifications.service';
 import { AppNotification } from '../../shared/interfaces/notification.interface';
+import { environment } from '../../../environments/environment';
 
 const UNREAD_COUNT_POLL_MS = 60_000;
 
@@ -24,6 +26,7 @@ const UNREAD_COUNT_POLL_MS = 60_000;
 })
 export class Topbar implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly planFeatures = inject(PlanFeaturesService);
   private readonly router = inject(Router);
   private readonly notificationsService = inject(NotificationsService);
   private readonly destroyRef = inject(DestroyRef);
@@ -48,6 +51,9 @@ export class Topbar implements OnInit {
   }
 
   logout(): void {
+    // Cleared before the request: the next user to log in on this tab must not
+    // inherit the previous company's plan, even for a frame.
+    this.planFeatures.clear();
     this.authService.logout().subscribe(() => void this.router.navigateByUrl('/auth/login'));
   }
 
@@ -58,6 +64,11 @@ export class Topbar implements OnInit {
       .slice(0, 2)
       .map((part) => part.charAt(0).toUpperCase())
       .join('');
+  }
+
+  avatarUrl(): string | null {
+    const avatarUrl = this.currentUser()?.avatarUrl;
+    return avatarUrl ? `${environment.filesBaseUrl}${avatarUrl}` : null;
   }
 
   loadUnreadCount(): void {

@@ -1,0 +1,75 @@
+.preferences-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 760px;
+}
+
+.preferences-settings__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.preferences-settings__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.preferences-settings__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.preferences-settings__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 8px 24px;
+}
+
+.preferences-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  &--static {
+    align-items: flex-start;
+  }
+}
+
+.preferences-settings__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preferences-settings__row-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.preferences-settings__row-hint {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  max-width: 480px;
+}
+
+.preferences-settings__row-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}

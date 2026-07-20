@@ -1,0 +1,40 @@
+@if (isLoading()) {
+  <div class="legal-dialog__state">
+    <mat-spinner diameter="28" />
+  </div>
+} @else if (hasError()) {
+  <div class="legal-dialog__state">
+    <p>Não foi possível carregar os documentos atualizados.</p>
+    <button mat-stroked-button (click)="logout()">Sair</button>
+  </div>
+} @else {
+  <h2 mat-dialog-title>Termos e Política atualizados</h2>
+
+  <mat-dialog-content class="legal-dialog__content">
+    <p class="legal-dialog__lead">
+      Atualizamos os documentos abaixo. Revise e aceite para continuar usando o Kotrim.
+    </p>
+
+    @for (doc of pendingDocuments(); track doc.id) {
+      <section class="legal-dialog__document">
+        <h3>{{ doc.title }} <span class="legal-dialog__version">v{{ doc.version }}</span></h3>
+        <div class="legal-dialog__body" [innerHTML]="trustedHtml(doc.content)"></div>
+      </section>
+    }
+
+    <mat-checkbox [checked]="confirmed()" (change)="confirmed.set($event.checked)" class="legal-dialog__confirm">
+      Li e concordo com os documentos acima.
+    </mat-checkbox>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="logout()">Sair</button>
+    <button mat-flat-button color="primary" [disabled]="!confirmed() || isSubmitting()" (click)="accept()">
+      @if (isSubmitting()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        Aceitar e continuar
+      }
+    </button>
+  </mat-dialog-actions>
+}

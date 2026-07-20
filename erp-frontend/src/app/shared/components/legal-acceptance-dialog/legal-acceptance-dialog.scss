@@ -1,0 +1,60 @@
+.legal-dialog__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+}
+
+.legal-dialog__content {
+  max-height: 60vh;
+}
+
+.legal-dialog__lead {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.legal-dialog__document {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+}
+
+.legal-dialog__version {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.legal-dialog__body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 8px;
+
+  ::ng-deep h2 {
+    font-size: 14px;
+    margin: 16px 0 4px;
+  }
+}
+
+.legal-dialog__confirm {
+  display: block;
+  margin-top: 8px;
+}

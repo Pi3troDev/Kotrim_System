@@ -59,7 +59,11 @@
   </mat-menu>
 
   <button mat-button class="topbar__user" [matMenuTriggerFor]="userMenu" type="button">
-    <span class="topbar__avatar">{{ initials() }}</span>
+    @if (avatarUrl(); as url) {
+      <img class="topbar__avatar topbar__avatar--photo" [src]="url" alt="" />
+    } @else {
+      <span class="topbar__avatar">{{ initials() }}</span>
+    }
     <span class="topbar__user-name">{{ currentUser()?.name }}</span>
     <mat-icon class="topbar__chevron">expand_more</mat-icon>
   </button>

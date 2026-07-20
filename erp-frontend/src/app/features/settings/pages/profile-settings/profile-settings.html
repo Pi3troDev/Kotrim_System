@@ -1,0 +1,76 @@
+<div class="profile-settings">
+  <header class="profile-settings__header">
+    <div>
+      <h1 class="profile-settings__title">Configurações</h1>
+      <p class="profile-settings__subtitle">Seu nome e foto de perfil</p>
+    </div>
+  </header>
+
+  <app-settings-tabs />
+
+  @if (isLoading()) {
+    <div class="profile-settings__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="profile-settings__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar seu perfil.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else {
+    <div class="profile-settings__avatar-card">
+      <div class="profile-settings__avatar-preview">
+        @if (avatarUrl(); as url) {
+          <img [src]="url" alt="Foto de perfil" />
+        } @else {
+          <span>{{ initials() }}</span>
+        }
+      </div>
+      <div class="profile-settings__avatar-actions">
+        <button mat-stroked-button type="button" (click)="triggerAvatarUpload()" [disabled]="isUploadingAvatar()">
+          @if (isUploadingAvatar()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            <ng-container>
+              <mat-icon>photo_camera</mat-icon>
+              Trocar foto
+            </ng-container>
+          }
+        </button>
+        <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)" />
+        <p class="profile-settings__avatar-hint">PNG ou JPG, até 5MB.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="profile-settings__form">
+      <mat-form-field appearance="outline" class="profile-settings__field">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" />
+        @if (form.controls.name.hasError('required')) {
+          <mat-error>Informe seu nome.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="profile-settings__field">
+        <mat-label>E-mail</mat-label>
+        <input matInput [value]="email()" disabled />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="profile-settings__field">
+        <mat-label>Perfil</mat-label>
+        <input matInput [value]="role()" disabled />
+      </mat-form-field>
+
+      <div class="profile-settings__actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Salvar alterações
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

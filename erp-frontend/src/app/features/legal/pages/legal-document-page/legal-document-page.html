@@ -1,0 +1,21 @@
+<div class="legal-page">
+  <a class="legal-page__brand" routerLink="/" aria-label="Kotrim — página inicial">
+    <picture>
+      <source srcset="/brand/kotrim-mark-64.webp" type="image/webp" />
+      <img src="/brand/kotrim-mark-64.png" alt="" width="28" height="28" decoding="async" />
+    </picture>
+    <span>Kotrim</span>
+  </a>
+
+  @if (isLoading()) {
+    <div class="legal-page__state">Carregando…</div>
+  } @else if (hasError() || !document()) {
+    <div class="legal-page__state">Não foi possível carregar este documento agora.</div>
+  } @else {
+    <article class="legal-page__content">
+      <h1>{{ document()!.title }}</h1>
+      <p class="legal-page__meta">Versão {{ document()!.version }} — publicada em {{ document()!.publishedAt | date: 'dd/MM/yyyy' }}</p>
+      <div [innerHTML]="trustedHtml(document()!.content)"></div>
+    </article>
+  }
+</div>

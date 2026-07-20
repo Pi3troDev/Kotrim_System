@@ -20,6 +20,9 @@
 .shell__main {
   padding: 28px 32px 48px;
   max-width: 1400px;
+  // Without this, content sits flush against the sidebar and the rest of the
+  // viewport is dead space — very visible on ultrawide monitors.
+  margin: 0 auto;
 }
 
 @media (max-width: 900px) {

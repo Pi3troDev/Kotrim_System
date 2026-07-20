@@ -34,6 +34,11 @@
     color: var(--primary-contrast);
     font-size: 12px;
     font-weight: 600;
+
+    &--photo {
+      object-fit: cover;
+      background: var(--surface-hover);
+    }
   }
 
   &__user-name {

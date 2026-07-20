@@ -1,0 +1,33 @@
+<div class="preferences-settings">
+  <header class="preferences-settings__header">
+    <div>
+      <h1 class="preferences-settings__title">Configurações</h1>
+      <p class="preferences-settings__subtitle">Preferências de exibição</p>
+    </div>
+  </header>
+
+  <app-settings-tabs />
+
+  <div class="preferences-settings__card">
+    <div class="preferences-settings__row">
+      <div class="preferences-settings__row-text">
+        <span class="preferences-settings__row-title">Tema</span>
+        <span class="preferences-settings__row-hint">Alterne entre os temas claro e escuro.</span>
+      </div>
+      <mat-slide-toggle [checked]="themeService.mode() === 'dark'" (change)="toggleTheme()">
+        {{ themeService.mode() === 'dark' ? 'Escuro' : 'Claro' }}
+      </mat-slide-toggle>
+    </div>
+
+    <div class="preferences-settings__row preferences-settings__row--static">
+      <div class="preferences-settings__row-text">
+        <span class="preferences-settings__row-title">Moeda e formato de data</span>
+        <span class="preferences-settings__row-hint">
+          O sistema usa o padrão brasileiro em toda a aplicação: valores em Real (R$ 1.150,00) e datas no formato
+          dd/mm/aaaa. Suporte a outras moedas ou idiomas não está disponível nesta versão.
+        </span>
+      </div>
+      <mat-icon class="preferences-settings__row-icon">info_outline</mat-icon>
+    </div>
+  </div>
+</div>

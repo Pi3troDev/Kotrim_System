@@ -3,10 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Sidebar } from '../sidebar/sidebar';
 import { Topbar } from '../topbar/topbar';
+import { ImpersonationBanner } from '../impersonation-banner/impersonation-banner';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, MatSidenavModule, Sidebar, Topbar],
+  imports: [RouterOutlet, MatSidenavModule, Sidebar, Topbar, ImpersonationBanner],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
