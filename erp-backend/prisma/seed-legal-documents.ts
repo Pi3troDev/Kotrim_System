@@ -5,16 +5,15 @@ import { LegalDocumentType, PrismaClient } from '@prisma/client';
  * once and then only ever changed by publishing a new version (see
  * `LegalDocumentService.publish`, exposed as `POST /admin/legal/documents`).
  *
- * `[PREENCHER: ...]` marks the one thing this seed cannot know on its own —
- * Kotrim's registered legal entity name and CNPJ. Search for that token
- * before going to production; nothing else here is a placeholder.
+ * Deliberately doesn't name a legal entity (razão social/CNPJ) — Kotrim
+ * operates without a CNPJ for now. Revisit once one exists.
  */
 const VERSION = '2026-07-17';
 
-const TERMS_CONTENT = `
+export const TERMS_CONTENT = `
 <h2>1. Aceitação</h2>
-<p>Estes Termos de Uso regem o acesso e uso do Kotrim System ("Kotrim"), uma plataforma de gestão para oficinas
-mecânicas e autoelétricas, oferecida por ("nós", "Kotrim"). Ao criar uma conta, você declara que leu, entendeu e concorda com estes Termos e com a
+<p>Estes Termos de Uso regem o acesso e uso do Kotrim System ("Kotrim", "nós"), uma plataforma de gestão para oficinas
+mecânicas e autoelétricas. Ao criar uma conta, você declara que leu, entendeu e concorda com estes Termos e com a
 <a href="/privacidade">Política de Privacidade</a>.</p>
 
 <h2>2. Cadastro e conta</h2>
@@ -82,9 +81,9 @@ Kotrim para dirimir eventuais controvérsias, ressalvada disposição legal em c
 <p>Dúvidas sobre estes Termos podem ser enviadas para <strong>suporte@kotrim.com.br</strong>.</p>
 `.trim();
 
-const PRIVACY_CONTENT = `
+export const PRIVACY_CONTENT = `
 <h2>1. Quem somos e nosso papel</h2>
-<p>Esta Política explica como o Kotrim System, trata dados pessoais. Em relação aos dados da sua conta (você e sua equipe), o Kotrim é
+<p>Esta Política explica como o Kotrim System ("Kotrim") trata dados pessoais. Em relação aos dados da sua conta (você e sua equipe), o Kotrim é
 <strong>controlador</strong>. Em relação aos dados que você cadastra sobre os seus próprios clientes finais
 (nomes, veículos, contatos), o Kotrim atua apenas como <strong>operador</strong>, seguindo as instruções da sua
 oficina, que é a controladora desses dados.</p>
