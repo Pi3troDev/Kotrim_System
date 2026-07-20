@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>{{ data.log.templateLabel }}</h2>
+
+<mat-dialog-content class="preview">
+  <dl class="preview__facts">
+    <dt>Para</dt><dd>{{ data.log.to }}</dd>
+    <dt>Assunto</dt><dd>{{ subject() || data.log.subject }}</dd>
+    @if (data.log.companyName) {
+      <dt>Empresa</dt><dd>{{ data.log.companyName }}</dd>
+    }
+    @if (data.log.providerMessageId) {
+      <dt>ID no provedor</dt><dd class="preview__mono">{{ data.log.providerMessageId }}</dd>
+    }
+  </dl>
+
+  @if (isLoading()) {
+    <div class="preview__state"><mat-spinner diameter="28" /></div>
+  } @else if (hasError()) {
+    <div class="preview__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível reconstruir este e-mail.</p>
+    </div>
+  } @else {
+    <!-- Honest about what this is: the current template, not a stored copy. -->
+    <p class="preview__note">
+      <mat-icon>info_outline</mat-icon>
+      <span>
+        Reconstruído a partir dos dados salvos, usando o modelo <strong>atual</strong>. Se o texto mudou desde o
+        envio, o cliente viu uma versão anterior.
+        @if (redacted()) {
+          Campos sensíveis deste tipo de e-mail não são guardados, então aparecem em branco.
+        }
+      </span>
+    </p>
+
+    <iframe
+      class="preview__frame"
+      [src]="previewUrl()"
+      sandbox=""
+      title="Conteúdo do e-mail"
+      loading="lazy"
+    ></iframe>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Fechar</button>
+
+  @if (redacted()) {
+    <button mat-flat-button color="primary" type="button" disabled matTooltip="Reenvio bloqueado por segurança">
+      Reenviar
+    </button>
+  } @else {
+    <button mat-flat-button color="primary" type="button" [disabled]="isResending() || hasError()" (click)="resend()">
+      @if (isResending()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        Reenviar
+      }
+    </button>
+  }
+</mat-dialog-actions>

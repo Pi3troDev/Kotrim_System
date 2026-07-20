@@ -1,0 +1,29 @@
+.activate-dialog__company {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.activate-dialog__loading {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.activate-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 340px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .activate-dialog__form {
+    min-width: 0;
+  }
+}

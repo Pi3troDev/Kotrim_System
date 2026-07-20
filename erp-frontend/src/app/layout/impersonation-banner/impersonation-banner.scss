@@ -1,0 +1,78 @@
+:host {
+  display: contents;
+}
+
+.imp {
+  // Amber, not red: nothing is wrong — but nothing here is yours either.
+  background: #b45f06;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.12);
+}
+
+.imp__inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.imp__icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.imp__text {
+  flex: 1;
+  font-size: 13.5px;
+  line-height: 1.4;
+  min-width: 0;
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+.imp__ro {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.22);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.imp__exit {
+  flex-shrink: 0;
+  background: #fff !important;
+  color: #b45f06 !important;
+  font-weight: 600;
+  height: 34px;
+}
+
+@media (max-width: 720px) {
+  .imp__inner {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .imp__text {
+    flex-basis: 100%;
+    order: 2;
+  }
+
+  .imp__exit {
+    margin-left: auto;
+  }
+}

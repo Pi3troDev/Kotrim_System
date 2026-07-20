@@ -1,0 +1,312 @@
+.health {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.health__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.health__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.health__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.health__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  mat-icon { font-size: 32px; width: 32px; height: 32px; color: var(--text-tertiary); }
+  p { margin: 0; font-size: 14px; }
+}
+
+// ── Service cards ───────────────────────────────────────────────────────────
+
+.health__services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.svc {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+
+  // State reads from colour AND from the icon — colour alone fails anyone who
+  // cannot distinguish green from amber.
+  &--up {
+    border-left-color: var(--success);
+    .svc__icon { color: var(--success); }
+    .svc__badge { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); }
+  }
+
+  &--degraded {
+    border-left-color: var(--warning);
+    .svc__icon { color: var(--warning); }
+    .svc__badge { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
+  }
+
+  &--down {
+    border-left-color: var(--danger);
+    .svc__icon { color: var(--danger); }
+    .svc__badge { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+  }
+}
+
+.svc__icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+.svc__body { flex: 1; min-width: 0; }
+
+.svc__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.svc__name {
+  font-size: 14px;
+  font-weight: 620;
+  color: var(--text-primary);
+}
+
+.svc__badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.svc__detail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.svc__latency {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Panels ──────────────────────────────────────────────────────────────────
+
+.health__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 620;
+  color: var(--text-primary);
+
+  &--spaced { margin-top: 22px; }
+}
+
+.panel__icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+
+  &--bad { color: var(--danger); }
+}
+
+.panel__hint {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+.panel__empty {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+// ── Facts ───────────────────────────────────────────────────────────────────
+
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px 20px;
+
+  dt {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.env {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+
+  // Production deserves to look different at a glance — knowing which
+  // environment you are staring at is the point of this line.
+  &--production {
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+  }
+
+  &--development {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    color: var(--primary);
+  }
+}
+
+// ── Jobs ────────────────────────────────────────────────────────────────────
+
+.jobs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jobs__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jobs__name {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.jobs__when {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Errors ──────────────────────────────────────────────────────────────────
+
+.errors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.errors__item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.errors__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.errors__source {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--danger);
+}
+
+.errors__at {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.errors__message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.errors__context {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 900px) {
+  .health__grid { grid-template-columns: 1fr; }
+}

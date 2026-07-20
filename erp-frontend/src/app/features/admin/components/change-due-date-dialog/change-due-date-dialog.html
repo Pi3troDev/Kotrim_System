@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>{{ isTrial ? 'Alterar fim do teste' : 'Alterar vencimento' }}</h2>
+
+<mat-dialog-content>
+  <p class="due-date-dialog__company">{{ data.company.name }}</p>
+  <p class="due-date-dialog__hint">
+    @if (isTrial) {
+      Estender o teste mantém a empresa com acesso até a nova data.
+    } @else {
+      Definir uma data futura em uma assinatura expirada reativa o acesso.
+    }
+  </p>
+
+  <form [formGroup]="form" class="due-date-dialog__form">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ isTrial ? 'Fim do teste' : 'Vencimento' }}</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+      @if (form.controls.date.hasError('required')) {
+        <mat-error>Informe a data.</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Cancelar</button>
+  <button mat-flat-button color="primary" type="button" [disabled]="isSaving()" (click)="submit()">
+    @if (isSaving()) {
+      <mat-spinner diameter="20" />
+    } @else {
+      Salvar
+    }
+  </button>
+</mat-dialog-actions>

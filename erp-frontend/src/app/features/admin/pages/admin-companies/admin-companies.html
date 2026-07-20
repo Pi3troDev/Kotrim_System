@@ -1,0 +1,161 @@
+<div class="admin-companies">
+  <header class="admin-companies__header">
+    <div>
+      <h1 class="admin-companies__title">Painel Kotrim</h1>
+      <p class="admin-companies__subtitle">Assinaturas de todas as oficinas cadastradas</p>
+    </div>
+  </header>
+
+  <app-admin-tabs />
+
+  @if (stats(); as summary) {
+    <section class="admin-companies__stats">
+      <app-stat-tile label="Empresas" [value]="summary.total.toString()" icon="business" />
+      <app-stat-tile label="Em teste" [value]="summary.TRIAL.toString()" icon="schedule" />
+      <app-stat-tile label="Ativas" [value]="summary.ACTIVE.toString()" icon="check_circle" />
+      <app-stat-tile label="Expiradas" [value]="summary.EXPIRED.toString()" icon="error_outline" />
+    </section>
+  }
+
+  <section class="admin-companies__filters">
+    <mat-form-field appearance="outline" class="admin-companies__search">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Nome, CNPJ ou e-mail" />
+      <mat-icon matIconSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="admin-companies__status-filter">
+      <mat-label>Status</mat-label>
+      <mat-select [formControl]="statusControl">
+        <mat-option value="">Todos</mat-option>
+        @for (status of statusOptions; track status) {
+          <mat-option [value]="status">{{ statusLabel(status) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </section>
+
+  @if (isLoading()) {
+    <div class="admin-companies__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="admin-companies__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar as empresas.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (companies().length === 0) {
+    <div class="admin-companies__state">
+      <mat-icon>business</mat-icon>
+      <p>Nenhuma empresa encontrada.</p>
+    </div>
+  } @else {
+    <div class="admin-companies__table-wrap">
+      <table mat-table [dataSource]="companies()" class="admin-companies__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Empresa</th>
+          <td mat-cell *matCellDef="let company">
+            <span class="admin-companies__name">{{ company.name }}</span>
+            <span class="admin-companies__doc">{{ company.document }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let company">
+            @if (company.subscription; as subscription) {
+              <span class="admin-companies__chip" [attr.data-status]="subscription.status">
+                {{ statusLabel(subscription.status) }}
+              </span>
+            } @else {
+              <span class="admin-companies__chip">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="plan">
+          <th mat-header-cell *matHeaderCellDef>Plano</th>
+          <td mat-cell *matCellDef="let company">
+            @if (company.subscription?.plan; as plan) {
+              <span class="admin-companies__plan">{{ plan.name }}</span>
+              <span class="admin-companies__price">{{ plan.priceCents / 100 | currency: plan.currency }}</span>
+            } @else {
+              <span class="admin-companies__muted">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expiresAt">
+          <th mat-header-cell *matHeaderCellDef>Vencimento</th>
+          <td mat-cell *matCellDef="let company">
+            @if (expiresAt(company); as date) {
+              {{ date | date: 'dd/MM/yyyy' }}
+            } @else {
+              <span class="admin-companies__muted">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="users">
+          <th mat-header-cell *matHeaderCellDef>Usuários</th>
+          <td mat-cell *matCellDef="let company">{{ company.userCount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Cadastro</th>
+          <td mat-cell *matCellDef="let company">{{ company.createdAt | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef aria-label="Ações"></th>
+          <td mat-cell *matCellDef="let company">
+            <button
+              mat-icon-button
+              type="button"
+              [matMenuTriggerFor]="menu"
+              [disabled]="!company.subscription"
+              aria-label="Ações da assinatura"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item type="button" (click)="viewAs(company)">
+                <mat-icon>visibility</mat-icon>
+                <span>Ver como cliente</span>
+              </button>
+              <button mat-menu-item type="button" (click)="activate(company)">
+                <mat-icon>check_circle</mat-icon>
+                <span>Ativar assinatura</span>
+              </button>
+              <button mat-menu-item type="button" (click)="changeDueDate(company)">
+                <mat-icon>event</mat-icon>
+                <span>Alterar vencimento</span>
+              </button>
+              <button
+                mat-menu-item
+                type="button"
+                (click)="cancel(company)"
+                [disabled]="company.subscription?.status === 'CANCELLED'"
+              >
+                <mat-icon>cancel</mat-icon>
+                <span>Cancelar assinatura</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPage($event)"
+    />
+  }
+</div>

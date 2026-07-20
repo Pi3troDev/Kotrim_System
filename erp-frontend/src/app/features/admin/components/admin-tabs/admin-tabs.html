@@ -1,0 +1,19 @@
+<nav class="admin-tabs" aria-label="Seções do painel">
+  <a
+    class="admin-tabs__link"
+    routerLink="/admin"
+    routerLinkActive="admin-tabs__link--active"
+    [routerLinkActiveOptions]="{ exact: true }"
+  >
+    Visão geral
+  </a>
+  <a class="admin-tabs__link" routerLink="/admin/companies" routerLinkActive="admin-tabs__link--active">
+    Empresas
+  </a>
+  <a class="admin-tabs__link" routerLink="/admin/mail-logs" routerLinkActive="admin-tabs__link--active">
+    Comunicações
+  </a>
+  <a class="admin-tabs__link" routerLink="/admin/health" routerLinkActive="admin-tabs__link--active">
+    Saúde do sistema
+  </a>
+</nav>

@@ -1,0 +1,137 @@
+<div class="mail-logs">
+  <header class="mail-logs__header">
+    <div>
+      <h1 class="mail-logs__title">Painel Kotrim</h1>
+      <p class="mail-logs__subtitle">Histórico de todos os e-mails que o sistema tentou enviar</p>
+    </div>
+  </header>
+
+  <app-admin-tabs />
+
+  @if (stats(); as summary) {
+    <section class="mail-logs__stats">
+      <app-stat-tile label="Total" [value]="summary.total.toString()" icon="mail" />
+      <app-stat-tile label="Enviados" [value]="summary.sent.toString()" icon="mark_email_read" />
+      <app-stat-tile label="Falharam" [value]="summary.failed.toString()" icon="error_outline" />
+      <app-stat-tile label="Reenviados" [value]="summary.resent.toString()" icon="replay" />
+    </section>
+  }
+
+  <section class="mail-logs__filters">
+    <mat-form-field appearance="outline" class="mail-logs__search">
+      <mat-label>Buscar</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="E-mail, assunto ou empresa" />
+      <mat-icon matIconSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="mail-logs__status-filter">
+      <mat-label>Status</mat-label>
+      <mat-select [formControl]="statusControl">
+        <mat-option value="">Todos</mat-option>
+        @for (status of statusOptions; track status) {
+          <mat-option [value]="status">{{ statusLabel(status) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </section>
+
+  @if (isLoading()) {
+    <div class="mail-logs__state">
+      <mat-spinner diameter="32" />
+    </div>
+  } @else if (hasError()) {
+    <div class="mail-logs__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar o histórico.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (logs().length === 0) {
+    <div class="mail-logs__state">
+      <mat-icon>mail</mat-icon>
+      <p>Nenhum e-mail encontrado.</p>
+    </div>
+  } @else {
+    <div class="mail-logs__table-wrap">
+      <table mat-table [dataSource]="logs()" class="mail-logs__table">
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Data</th>
+          <td mat-cell *matCellDef="let log">
+            <span class="mail-logs__date">{{ log.createdAt | date: 'dd/MM/yyyy' }}</span>
+            <span class="mail-logs__time">{{ log.createdAt | date: 'HH:mm' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="template">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let log">
+            <span class="mail-logs__template">{{ log.templateLabel }}</span>
+            <span class="mail-logs__subject">{{ log.subject }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="to">
+          <th mat-header-cell *matHeaderCellDef>Para</th>
+          <td mat-cell *matCellDef="let log">{{ log.to }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="company">
+          <th mat-header-cell *matHeaderCellDef>Empresa / Usuário</th>
+          <td mat-cell *matCellDef="let log">
+            @if (log.companyName) {
+              <span class="mail-logs__company">{{ log.companyName }}</span>
+            }
+            @if (log.userName) {
+              <span class="mail-logs__user">{{ log.userName }}</span>
+            }
+            @if (!log.companyName && !log.userName) {
+              <span class="mail-logs__muted">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let log">
+            <span class="mail-logs__chip" [attr.data-status]="log.status">{{ statusLabel(log.status) }}</span>
+            @if (log.error) {
+              <!-- The whole reason a FAILED row is worth keeping. -->
+              <mat-icon class="mail-logs__error-icon" [matTooltip]="log.error">info_outline</mat-icon>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="provider">
+          <th mat-header-cell *matHeaderCellDef>Provedor</th>
+          <td mat-cell *matCellDef="let log">
+            <span class="mail-logs__provider">{{ log.provider }}</span>
+            @if (log.providerMessageId) {
+              <span class="mail-logs__msgid" [matTooltip]="log.providerMessageId">
+                {{ log.providerMessageId.slice(0, 8) }}…
+              </span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef aria-label="Ações"></th>
+          <td mat-cell *matCellDef="let log">
+            <button mat-icon-button type="button" (click)="open(log)" matTooltip="Ver conteúdo e reenviar">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="mail-logs__row" (click)="open(row)"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[20, 50, 100]"
+      (page)="onPage($event)"
+    />
+  }
+</div>

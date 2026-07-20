@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>Ativar assinatura</h2>
+
+<mat-dialog-content>
+  <p class="activate-dialog__company">{{ data.company.name }}</p>
+
+  @if (isLoading()) {
+    <div class="activate-dialog__loading">
+      <mat-spinner diameter="28" />
+    </div>
+  } @else {
+    <form [formGroup]="form" class="activate-dialog__form">
+      <mat-form-field appearance="outline">
+        <mat-label>Plano</mat-label>
+        <mat-select formControlName="planId">
+          @for (plan of plans(); track plan.id) {
+            <mat-option [value]="plan.id">{{ plan.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.planId.hasError('required')) {
+          <mat-error>Selecione um plano.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Vencimento</mat-label>
+        <input matInput [matDatepicker]="periodEndPicker" formControlName="periodEnd" />
+        <mat-datepicker-toggle matIconSuffix [for]="periodEndPicker" />
+        <mat-datepicker #periodEndPicker />
+        @if (form.controls.periodEnd.hasError('required')) {
+          <mat-error>Informe a data de vencimento.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Forma de pagamento</mat-label>
+        <mat-select formControlName="method">
+          <mat-option value="PIX">Pix</mat-option>
+          <mat-option value="MERCADO_PAGO">Mercado Pago</mat-option>
+          <mat-option value="TRANSFERENCIA">Transferência</mat-option>
+          <mat-option value="OUTRO">Outro</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Observações</mat-label>
+        <textarea matInput formControlName="notes" rows="2"></textarea>
+      </mat-form-field>
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Cancelar</button>
+  <button mat-flat-button color="primary" type="button" [disabled]="isSaving() || isLoading()" (click)="submit()">
+    @if (isSaving()) {
+      <mat-spinner diameter="20" />
+    } @else {
+      Ativar
+    }
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,354 @@
+.subscription {
+  min-height: 100vh;
+  background: var(--surface-sunken);
+}
+
+.subscription__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--topbar-height);
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.subscription__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subscription__brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.subscription__brand-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.subscription__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subscription__content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.subscription__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 96px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.subscription__status {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+
+  &--blocked {
+    border-left-color: var(--danger);
+  }
+}
+
+.subscription__status-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+
+  // Blue, not red: a company waiting on its first payment has done nothing
+  // wrong — treating it like an expiry would be a hostile first impression.
+  &[data-status='PENDING'] {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    color: var(--primary);
+  }
+
+  &[data-status='TRIAL'] {
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+  }
+
+  &[data-status='ACTIVE'] {
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+  }
+
+  &[data-status='EXPIRED'],
+  &[data-status='CANCELLED'] {
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+  }
+}
+
+.subscription__title {
+  margin: 12px 0 4px;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.subscription__subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+.subscription__instructions {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.subscription__instructions-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  > mat-icon {
+    color: var(--warning);
+    flex-shrink: 0;
+  }
+
+  > div {
+    flex: 1;
+  }
+
+  h2 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 620;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+.subscription__steps {
+  margin: 16px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.subscription__pix {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.subscription__pix-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.subscription__pix-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.subscription__plans-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 620;
+  color: var(--text-primary);
+}
+
+.subscription__plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.subscription__plan {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  &--current {
+    border-color: var(--primary);
+  }
+}
+
+.subscription__plan-head {
+  h3 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 640;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 36px;
+  }
+}
+
+.subscription__plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 18px 0;
+}
+
+.subscription__plan-amount {
+  font-size: 30px;
+  font-weight: 680;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.subscription__plan-interval {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.subscription__plan-features {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: var(--success);
+    flex-shrink: 0;
+  }
+}
+
+.subscription__plan-cta {
+  width: 100%;
+}
+
+.subscription__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--text-tertiary);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .subscription__content {
+    padding: 20px 16px 48px;
+  }
+
+  .subscription__status,
+  .subscription__instructions {
+    padding: 20px;
+  }
+
+  .subscription__title {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subscription__plan {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

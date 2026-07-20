@@ -1,0 +1,149 @@
+<div class="subscription">
+  <header class="subscription__topbar">
+    <div class="subscription__brand">
+      <span class="subscription__brand-mark">K</span>
+      <span class="subscription__brand-name">Kotrim</span>
+    </div>
+    <div class="subscription__topbar-actions">
+      @if (!isBlocked()) {
+        <a mat-button routerLink="/dashboard">
+          <mat-icon>arrow_back</mat-icon>
+          Voltar ao sistema
+        </a>
+      }
+      <button mat-button type="button" (click)="logout()">Sair</button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="subscription__state">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (hasError()) {
+    <div class="subscription__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar sua assinatura.</p>
+      <button mat-flat-button color="primary" type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else {
+    <main class="subscription__content">
+      @if (subscription(); as current) {
+        <section class="subscription__status" [class.subscription__status--blocked]="isBlocked()">
+          <div>
+            <span class="subscription__status-chip" [attr.data-status]="current.status">{{ statusLabel() }}</span>
+            <h1 class="subscription__title">
+              @if (current.status === 'PENDING') {
+                Falta pouco, {{ userName() }}
+              } @else if (isBlocked()) {
+                Seu acesso ao Kotrim está pausado
+              } @else {
+                Olá, {{ userName() }}
+              }
+            </h1>
+            <p class="subscription__subtitle">
+              @if (current.status === 'PENDING') {
+                Sua conta foi criada. Finalize o pagamento abaixo e liberamos o acesso assim que ele for
+                confirmado.
+              } @else if (current.status === 'TRIAL') {
+                Seu teste termina em {{ current.trialEndsAt | date: 'dd/MM/yyyy' }}. Escolha um plano para não perder o
+                acesso.
+              } @else if (current.status === 'ACTIVE') {
+                Plano {{ current.plan?.name }} — válido até {{ current.currentPeriodEnd | date: 'dd/MM/yyyy' }}.
+              } @else if (current.status === 'EXPIRED') {
+                Escolha um plano abaixo para reativar sua conta. Seus dados continuam salvos.
+              } @else {
+                Sua assinatura foi cancelada. Escolha um plano para voltar a usar o Kotrim.
+              }
+            </p>
+          </div>
+        </section>
+      }
+
+      @if (instructions(); as manual) {
+        <section class="subscription__instructions">
+          <div class="subscription__instructions-head">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <h2>Aguardando confirmação do pagamento</h2>
+              <p>Sua conta será ativada assim que o pagamento for confirmado pelo administrador.</p>
+            </div>
+            <button mat-icon-button type="button" (click)="dismissInstructions()" aria-label="Fechar">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <ol class="subscription__steps">
+            @for (step of manual.instructions; track step) {
+              <li>{{ step }}</li>
+            }
+          </ol>
+
+          @if (manual.pixKey; as pixKey) {
+            <div class="subscription__pix">
+              <div>
+                <span class="subscription__pix-label">Chave Pix</span>
+                <span class="subscription__pix-value">{{ pixKey }}</span>
+              </div>
+              <button mat-stroked-button type="button" (click)="copyPixKey(pixKey)">
+                <mat-icon>content_copy</mat-icon>
+                Copiar
+              </button>
+            </div>
+          }
+        </section>
+      }
+
+      <section class="subscription__plans">
+        <h2 class="subscription__plans-title">Planos</h2>
+        <div class="subscription__plans-grid">
+          @for (plan of plans(); track plan.id) {
+            <article class="subscription__plan" [class.subscription__plan--current]="isCurrentPlan(plan)">
+              <header class="subscription__plan-head">
+                <h3>{{ plan.name }}</h3>
+                <p>{{ plan.description }}</p>
+              </header>
+
+              <p class="subscription__plan-price">
+                <span class="subscription__plan-amount">{{ plan.priceCents / 100 | currency: plan.currency }}</span>
+                <span class="subscription__plan-interval">/mês</span>
+              </p>
+
+              <ul class="subscription__plan-features">
+                @for (feature of plan.features; track feature) {
+                  <li>
+                    <mat-icon>check</mat-icon>
+                    {{ feature }}
+                  </li>
+                }
+              </ul>
+
+              @if (isCurrentPlan(plan)) {
+                <button mat-stroked-button type="button" disabled class="subscription__plan-cta">Plano atual</button>
+              } @else {
+                <button
+                  mat-flat-button
+                  color="primary"
+                  type="button"
+                  class="subscription__plan-cta"
+                  [disabled]="checkingOutPlanId() !== null"
+                  (click)="subscribe(plan)"
+                >
+                  @if (checkingOutPlanId() === plan.id) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    Assinar agora
+                  }
+                </button>
+              }
+            </article>
+          }
+        </div>
+
+        <p class="subscription__note">
+          <mat-icon>info_outline</mat-icon>
+          O pagamento é feito manualmente (Pix ou Mercado Pago). Após a confirmação, um administrador ativa sua conta.
+        </p>
+      </section>
+    </main>
+  }
+</div>

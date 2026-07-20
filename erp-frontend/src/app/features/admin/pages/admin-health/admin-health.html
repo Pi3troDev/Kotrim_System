@@ -1,0 +1,103 @@
+<div class="health">
+  <header class="health__header">
+    <div>
+      <h1 class="health__title">Painel Kotrim</h1>
+      <p class="health__subtitle">Saúde do sistema</p>
+    </div>
+    <button mat-stroked-button type="button" (click)="load()" [disabled]="isLoading()">
+      <mat-icon>refresh</mat-icon>
+      Verificar agora
+    </button>
+  </header>
+
+  <app-admin-tabs />
+
+  @if (isLoading()) {
+    <div class="health__state"><mat-spinner diameter="32" /></div>
+  } @else if (hasError()) {
+    <div class="health__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível verificar a saúde do sistema.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (health(); as h) {
+    <section class="health__services">
+      @for (service of h.services; track service.name) {
+        <article class="svc svc--{{ service.state }}">
+          <mat-icon class="svc__icon">{{ stateIcon(service.state) }}</mat-icon>
+          <div class="svc__body">
+            <div class="svc__head">
+              <span class="svc__name">{{ service.name }}</span>
+              <span class="svc__badge">{{ stateLabel(service.state) }}</span>
+            </div>
+            <p class="svc__detail">{{ service.detail }}</p>
+          </div>
+          @if (service.latencyMs !== undefined) {
+            <span class="svc__latency">{{ service.latencyMs }}ms</span>
+          }
+        </article>
+      }
+    </section>
+
+    <section class="health__grid">
+      <article class="panel">
+        <h3 class="panel__title">Sistema</h3>
+        <dl class="facts">
+          <dt>Versão</dt><dd>{{ h.version }}</dd>
+          <dt>Ambiente</dt>
+          <dd>
+            <span class="env env--{{ h.environment }}">{{ h.environment }}</span>
+          </dd>
+          <dt>No ar há</dt><dd>{{ uptime(h.uptimeSeconds) }}</dd>
+          <dt>Node</dt><dd>{{ h.nodeVersion }}</dd>
+          <dt>Memória</dt><dd>{{ h.memory.usedMb }} MB de {{ h.memory.totalMb }} MB</dd>
+        </dl>
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">Tarefas agendadas</h3>
+        <ul class="jobs">
+          @for (job of h.scheduledJobs; track job.name) {
+            <li class="jobs__item">
+              <span class="jobs__name">{{ job.name }}</span>
+              <span class="jobs__when">{{ job.schedule }} · {{ job.timezone }}</span>
+            </li>
+          }
+        </ul>
+
+        <h3 class="panel__title panel__title--spaced">Filas</h3>
+        <!-- Honest: there is no queue. Saying "0 jobs" would imply one exists. -->
+        <p class="panel__empty">
+          O sistema não usa filas. O único trabalho assíncrono é a tarefa diária acima.
+        </p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h3 class="panel__title">
+        <mat-icon class="panel__icon" [class.panel__icon--bad]="h.recentErrors.length > 0">bug_report</mat-icon>
+        Erros recentes
+        <span class="panel__hint">últimos 7 dias</span>
+      </h3>
+
+      @if (h.recentErrors.length === 0) {
+        <p class="panel__empty">Nenhum erro registrado.</p>
+      } @else {
+        <ul class="errors">
+          @for (error of h.recentErrors; track error.at + error.message) {
+            <li class="errors__item">
+              <div class="errors__meta">
+                <span class="errors__source">{{ error.source }}</span>
+                <span class="errors__at">{{ error.at | date: 'dd/MM HH:mm' }}</span>
+              </div>
+              <p class="errors__message">{{ error.message }}</p>
+              @if (error.context) {
+                <span class="errors__context">{{ error.context }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

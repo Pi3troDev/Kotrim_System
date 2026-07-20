@@ -1,0 +1,182 @@
+.mail-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mail-logs__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mail-logs__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.mail-logs__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mail-logs__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.mail-logs__filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mail-logs__search {
+  flex: 1;
+  min-width: 240px;
+}
+
+.mail-logs__status-filter {
+  width: 180px;
+}
+
+.mail-logs__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.mail-logs__table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  // Six columns of mostly-text: this scrolls inside its box rather than pushing
+  // the page sideways.
+  overflow-x: auto;
+}
+
+.mail-logs__table {
+  width: 100%;
+  background: transparent;
+}
+
+.mail-logs__date,
+.mail-logs__template,
+.mail-logs__company {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mail-logs__time,
+.mail-logs__subject,
+.mail-logs__user,
+.mail-logs__msgid {
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.mail-logs__date,
+.mail-logs__time,
+.mail-logs__msgid {
+  font-variant-numeric: tabular-nums;
+}
+
+.mail-logs__subject {
+  max-width: 34ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mail-logs__provider {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.mail-logs__msgid {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  cursor: help;
+}
+
+.mail-logs__muted {
+  color: var(--text-tertiary);
+}
+
+.mail-logs__chip {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  white-space: nowrap;
+
+  &[data-status='SENT'] {
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+  }
+
+  &[data-status='FAILED'] {
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+  }
+
+  &[data-status='RESENT'] {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    color: var(--primary);
+  }
+}
+
+.mail-logs__error-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  vertical-align: middle;
+  color: var(--danger);
+  cursor: help;
+}
+
+@media (max-width: 600px) {
+  .mail-logs__status-filter {
+    width: 100%;
+  }
+}
+
+.mail-logs__row {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}

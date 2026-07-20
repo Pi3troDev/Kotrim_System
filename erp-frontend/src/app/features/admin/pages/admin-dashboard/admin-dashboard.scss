@@ -1,0 +1,422 @@
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dash__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dash__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.dash__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dash__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--text-tertiary);
+  }
+
+  p { margin: 0; font-size: 14px; }
+}
+
+// ── Money row ───────────────────────────────────────────────────────────────
+
+.dash__money {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.money {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  // MRR is the number the business lives on; it gets the navy card.
+  &--hero {
+    background: var(--primary);
+    border-color: var(--primary);
+
+    .money__label,
+    .money__foot { color: rgb(255 255 255 / 0.72); }
+    .money__value { color: #fff; }
+    .money__info { color: rgb(255 255 255 / 0.6); }
+  }
+}
+
+.money__label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.money__info {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  cursor: help;
+}
+
+.money__value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+
+  &--up { color: var(--success); }
+  &--down { color: var(--danger); }
+}
+
+.money__foot {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+
+// ── Charts ──────────────────────────────────────────────────────────────────
+
+.dash__charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.dash__empty-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 260px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+
+  mat-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+}
+
+.dash__empty-hint {
+  font-size: 13px !important;
+  color: var(--text-tertiary) !important;
+}
+
+// ── Panels ──────────────────────────────────────────────────────────────────
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.panel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 620;
+  color: var(--text-primary);
+}
+
+.panel__icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+
+  &--warn { color: var(--warning); }
+  &--ok { color: var(--success); }
+}
+
+.panel__empty {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-tertiary);
+  padding: 8px 0 4px;
+}
+
+.panel__link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ── Plan split bars ─────────────────────────────────────────────────────────
+
+.split {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.split__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.split__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.split__count {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.split__bar {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+
+.split__fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--primary);
+}
+
+// ── KPI strip ───────────────────────────────────────────────────────────────
+
+.dash__kpis {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &--ok { border-left-color: var(--success); }
+  &--warn { border-left-color: var(--warning); }
+  &--info { border-left-color: var(--primary); }
+  &--bad { border-left-color: var(--danger); }
+}
+
+.kpi__n {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__l {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.kpi__sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Row lists ───────────────────────────────────────────────────────────────
+
+.dash__lists {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rows__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+
+  &:last-child { border-bottom: 0; }
+}
+
+.rows__primary {
+  font-size: 13.5px;
+  font-weight: 560;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rows__secondary {
+  grid-column: 1;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.rows__value {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &--ok { color: var(--success); }
+  &--muted { color: var(--text-tertiary); font-weight: 550; }
+}
+
+.rows__chip {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  white-space: nowrap;
+
+  &[data-status='TRIAL'] {
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+  }
+
+  &[data-status='ACTIVE'] {
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+    color: var(--success);
+  }
+
+  &[data-status='EXPIRED'],
+  &[data-status='CANCELLED'] {
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+  }
+}
+
+// ── Platform totals ─────────────────────────────────────────────────────────
+
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 18px 12px;
+}
+
+.totals__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.totals__n {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+
+  &--bad { color: var(--danger); }
+}
+
+.totals__l {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+
+@media (max-width: 1200px) {
+  .dash__money { grid-template-columns: repeat(2, 1fr); }
+  .dash__kpis { grid-template-columns: repeat(3, 1fr); }
+  .dash__lists { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .dash__charts { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .dash__money,
+  .dash__kpis,
+  .dash__lists {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,27 @@
+.due-date-dialog__company {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.due-date-dialog__hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 42ch;
+}
+
+.due-date-dialog__form {
+  min-width: 320px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .due-date-dialog__form {
+    min-width: 0;
+  }
+}

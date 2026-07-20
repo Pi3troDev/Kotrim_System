@@ -1,0 +1,284 @@
+<div class="dash">
+  <header class="dash__header">
+    <div>
+      <h1 class="dash__title">Painel Kotrim</h1>
+      <p class="dash__subtitle">Visão geral do negócio</p>
+    </div>
+    <button mat-stroked-button type="button" (click)="load()" [disabled]="isLoading()">
+      <mat-icon>refresh</mat-icon>
+      Atualizar
+    </button>
+  </header>
+
+  <app-admin-tabs />
+
+  @if (isLoading()) {
+    <div class="dash__state"><mat-spinner diameter="32" /></div>
+  } @else if (hasError()) {
+    <div class="dash__state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Não foi possível carregar as métricas.</p>
+      <button mat-button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (metrics(); as m) {
+    <!-- ── Money ─────────────────────────────────────────────────────────── -->
+    <section class="dash__money">
+      <article class="money money--hero">
+        <span class="money__label">
+          MRR
+          <mat-icon
+            class="money__info"
+            matTooltip="Receita recorrente mensal: a soma do preço de tabela de todas as assinaturas ativas."
+            >info_outline</mat-icon
+          >
+        </span>
+        <strong class="money__value">{{ money(m.revenue.mrrCents) }}</strong>
+        <span class="money__foot">{{ m.subscriptions.active }} assinaturas ativas</span>
+      </article>
+
+      <article class="money">
+        <span class="money__label">
+          ARR
+          <mat-icon class="money__info" matTooltip="MRR × 12. É uma projeção, não uma promessa.">info_outline</mat-icon>
+        </span>
+        <strong class="money__value">{{ money(m.revenue.arrCents) }}</strong>
+        <span class="money__foot">Projeção anual</span>
+      </article>
+
+      <article class="money">
+        <span class="money__label">Receita total</span>
+        <strong class="money__value">{{ money(m.revenue.totalCents) }}</strong>
+        <span class="money__foot">Todos os pagamentos confirmados</span>
+      </article>
+
+      <article class="money">
+        <span class="money__label">Crescimento</span>
+        <strong class="money__value money__value--{{ growthTone(m.growth.percent) }}">
+          {{ percent(m.growth.percent) }}
+        </strong>
+        <span class="money__foot" [matTooltip]="percentHint(m.growth.percent, 'Nenhum cadastro no mês passado para comparar.')">
+          {{ m.growth.companiesThisMonth }} este mês · {{ m.growth.companiesLastMonth }} no anterior
+        </span>
+      </article>
+    </section>
+
+    <!-- ── Chart + plan split ────────────────────────────────────────────── -->
+    <section class="dash__charts">
+      @if (hasRevenue()) {
+        <app-area-chart
+          [data]="revenueSeries()"
+          [format]="revenueFormat"
+          title="Receita por mês"
+          subtitle="Pagamentos confirmados nos últimos 12 meses"
+        />
+      } @else {
+        <div class="dash__empty-chart">
+          <mat-icon>show_chart</mat-icon>
+          <p><strong>Nenhum pagamento confirmado ainda.</strong></p>
+          <p class="dash__empty-hint">O gráfico de receita aparece assim que o primeiro Pix for confirmado.</p>
+        </div>
+      }
+
+      <article class="panel">
+        <h3 class="panel__title">Distribuição por plano</h3>
+        @if (m.distribution.length === 0) {
+          <p class="panel__empty">Nenhuma assinatura ativa.</p>
+        } @else {
+          <ul class="split">
+            @for (plan of m.distribution; track plan.slug) {
+              <li class="split__row">
+                <div class="split__head">
+                  <span class="split__name">{{ plan.planName }}</span>
+                  <span class="split__count">{{ plan.count }} · {{ plan.percent }}%</span>
+                </div>
+                <div class="split__bar"><span class="split__fill" [style.width.%]="plan.percent"></span></div>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </section>
+
+    <!-- ── Funnel ────────────────────────────────────────────────────────── -->
+    <section class="dash__kpis">
+      <article class="kpi kpi--ok">
+        <span class="kpi__n">{{ m.subscriptions.active }}</span>
+        <span class="kpi__l">Clientes ativos</span>
+      </article>
+      <article class="kpi kpi--warn">
+        <span class="kpi__n">{{ m.subscriptions.trial }}</span>
+        <span class="kpi__l">Em teste</span>
+      </article>
+      <article class="kpi kpi--info">
+        <span class="kpi__n">{{ m.subscriptions.pending }}</span>
+        <span class="kpi__l">Aguardando pagamento</span>
+      </article>
+      <article class="kpi kpi--bad">
+        <span class="kpi__n">{{ m.subscriptions.expired }}</span>
+        <span class="kpi__l">Expiradas</span>
+      </article>
+      <article class="kpi">
+        <span class="kpi__n">{{ percent(m.conversion.ratePercent) }}</span>
+        <span class="kpi__l" [matTooltip]="percentHint(m.conversion.ratePercent, 'Nenhum teste iniciado ainda.')">
+          Conversão teste → pago
+        </span>
+        <span class="kpi__sub">{{ m.conversion.trialsConverted }} de {{ m.conversion.trialsStarted }}</span>
+      </article>
+      <article class="kpi">
+        <span class="kpi__n">{{ percent(m.churn.ratePercent) }}</span>
+        <span class="kpi__l" [matTooltip]="percentHint(m.churn.ratePercent, 'Ninguém ativo no início do mês para comparar.')">
+          Churn do mês
+        </span>
+        <span class="kpi__sub">{{ m.churn.lostThisMonth }} de {{ m.churn.activeAtMonthStart }}</span>
+      </article>
+    </section>
+
+    <!-- ── Needs attention ───────────────────────────────────────────────── -->
+    <section class="dash__lists">
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon panel__icon--warn">pending_actions</mat-icon>
+          Pagamentos pendentes
+        </h3>
+        @if (m.pendingPayments.length === 0) {
+          <p class="panel__empty">Nenhum pedido esperando confirmação.</p>
+        } @else {
+          <ul class="rows">
+            @for (p of m.pendingPayments; track p.companyId + p.createdAt) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ p.companyName }}</span>
+                <span class="rows__secondary">{{ p.planName }} · {{ p.createdAt | date: 'dd/MM' }}</span>
+                <span class="rows__value">{{ money(p.amountCents) }}</span>
+              </li>
+            }
+          </ul>
+          <a class="panel__link" routerLink="/admin/companies">Ir para as empresas</a>
+        }
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon panel__icon--warn">schedule</mat-icon>
+          Testes terminando
+        </h3>
+        @if (m.endingTrials.length === 0) {
+          <p class="panel__empty">Nenhum teste terminando nos próximos 30 dias.</p>
+        } @else {
+          <ul class="rows">
+            @for (t of m.endingTrials; track t.companyId) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ t.companyName }}</span>
+                <span class="rows__secondary">{{ t.trialEndsAt | date: 'dd/MM/yyyy' }}</span>
+                <span class="rows__value rows__value--muted">{{ t.daysRemaining }}d</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon">autorenew</mat-icon>
+          Próximas renovações
+        </h3>
+        @if (m.upcomingRenewals.length === 0) {
+          <p class="panel__empty">Nenhuma renovação nos próximos 30 dias.</p>
+        } @else {
+          <ul class="rows">
+            @for (r of m.upcomingRenewals; track r.companyId) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ r.companyName }}</span>
+                <span class="rows__secondary">{{ r.planName }} · {{ r.currentPeriodEnd | date: 'dd/MM/yyyy' }}</span>
+                <span class="rows__value rows__value--muted">{{ r.daysRemaining }}d</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </section>
+
+    <!-- ── Activity ──────────────────────────────────────────────────────── -->
+    <section class="dash__lists">
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon">store</mat-icon>
+          Últimos cadastros
+        </h3>
+        @if (m.recentSignups.length === 0) {
+          <p class="panel__empty">Nenhuma oficina cadastrada.</p>
+        } @else {
+          <ul class="rows">
+            @for (s of m.recentSignups; track s.companyId) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ s.companyName }}</span>
+                <span class="rows__secondary">{{ s.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                <span class="rows__chip" [attr.data-status]="s.status">{{ statusLabel(s.status) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon panel__icon--ok">payments</mat-icon>
+          Últimos pagamentos
+        </h3>
+        @if (m.recentPayments.length === 0) {
+          <p class="panel__empty">Nenhum pagamento confirmado ainda.</p>
+        } @else {
+          <ul class="rows">
+            @for (p of m.recentPayments; track p.paidAt + p.companyName) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ p.companyName }}</span>
+                <span class="rows__secondary">{{ p.planName }} · {{ p.paidAt | date: 'dd/MM/yyyy' }}</span>
+                <span class="rows__value rows__value--ok">{{ money(p.amountCents) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+
+      <article class="panel">
+        <h3 class="panel__title">
+          <mat-icon class="panel__icon">pie_chart</mat-icon>
+          Receita por plano
+        </h3>
+        @if (m.revenue.byPlan.length === 0) {
+          <p class="panel__empty">Sem receita registrada.</p>
+        } @else {
+          <ul class="rows">
+            @for (p of m.revenue.byPlan; track p.slug) {
+              <li class="rows__item">
+                <span class="rows__primary">{{ p.planName }}</span>
+                <span class="rows__secondary">{{ p.subscribers }} assinante(s)</span>
+                <span class="rows__value">{{ money(p.cents) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </section>
+
+    <!-- ── Platform ──────────────────────────────────────────────────────── -->
+    <section class="panel">
+      <h3 class="panel__title">
+        <mat-icon class="panel__icon">dns</mat-icon>
+        Números da plataforma
+      </h3>
+      <div class="totals">
+        <div class="totals__item"><span class="totals__n">{{ m.platform.companies | number }}</span><span class="totals__l">Oficinas</span></div>
+        <div class="totals__item"><span class="totals__n">{{ m.platform.users | number }}</span><span class="totals__l">Usuários</span></div>
+        <div class="totals__item"><span class="totals__n">{{ m.platform.workOrders | number }}</span><span class="totals__l">Ordens de serviço</span></div>
+        <div class="totals__item"><span class="totals__n">{{ m.platform.vehicles | number }}</span><span class="totals__l">Veículos</span></div>
+        <div class="totals__item"><span class="totals__n">{{ m.platform.clients | number }}</span><span class="totals__l">Clientes finais</span></div>
+        <div class="totals__item"><span class="totals__n">{{ m.platform.mailsSent | number }}</span><span class="totals__l">E-mails enviados</span></div>
+        <div class="totals__item">
+          <span class="totals__n" [class.totals__n--bad]="m.platform.mailsFailed > 0">{{ m.platform.mailsFailed | number }}</span>
+          <span class="totals__l">E-mails com falha</span>
+        </div>
+        <div class="totals__item"><span class="totals__n">{{ storage(m.platform.storageBytes) }}</span><span class="totals__l">Armazenamento</span></div>
+      </div>
+    </section>
+  }
+</div>
