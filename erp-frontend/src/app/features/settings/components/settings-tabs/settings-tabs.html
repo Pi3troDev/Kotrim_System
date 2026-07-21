@@ -1,7 +1,12 @@
 <nav class="settings-tabs">
-  <a class="settings-tabs__link" routerLink="/settings" routerLinkActive="settings-tabs__link--active" [routerLinkActiveOptions]="{ exact: true }">
-    Empresa
-  </a>
+  @if (showCompanyTabs()) {
+    <a class="settings-tabs__link" routerLink="/settings/company" routerLinkActive="settings-tabs__link--active">
+      Empresa
+    </a>
+    <a class="settings-tabs__link" routerLink="/settings/team" routerLinkActive="settings-tabs__link--active">
+      Equipe
+    </a>
+  }
   <a class="settings-tabs__link" routerLink="/settings/preferences" routerLinkActive="settings-tabs__link--active">
     Preferências
   </a>

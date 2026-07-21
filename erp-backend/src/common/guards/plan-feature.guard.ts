@@ -56,15 +56,28 @@ export class PlanFeatureGuard implements CanActivate {
         ? request.resolvedSubscription
         : (await this.access.resolve(user.companyId)).subscription;
 
-    if (featuresForSubscription(subscription).includes(required)) {
-      return true;
+    if (!featuresForSubscription(subscription).includes(required)) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'PLAN_UPGRADE_REQUIRED',
+        feature: required,
+        message: 'Este módulo não está incluído no seu plano. Faça upgrade para liberar o acesso.',
+      });
     }
 
-    throw new ForbiddenException({
-      statusCode: 403,
-      error: 'PLAN_UPGRADE_REQUIRED',
-      feature: required,
-      message: 'Este módulo não está incluído no seu plano. Faça upgrade para liberar o acesso.',
-    });
+    // The plan includes it, but does this user's cargo? A Mecânico's role
+    // never lists FINANCE, even on Oficina Plus — this is the check that
+    // actually keeps them out of it, distinct from (and layered under) the
+    // plan-level gate above.
+    if (!user.roleAllowedFeatures.includes(required)) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'ROLE_ACCESS_DENIED',
+        feature: required,
+        message: 'Seu cargo não tem acesso a este módulo.',
+      });
+    }
+
+    return true;
   }
 }

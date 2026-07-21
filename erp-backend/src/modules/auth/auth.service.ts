@@ -17,6 +17,7 @@ import { RegisterCompanyDto, RegistrationIntent } from './dto/register-company.d
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { AuthTokens, AuthResult } from './interfaces/auth-tokens.interface';
+import { ALL_FEATURES } from '../billing/plan-features';
 
 const DEFAULT_ADMIN_ROLE = 'Admin';
 
@@ -56,7 +57,7 @@ export class AuthService {
         ? (await this.prisma.plan.findFirst({ where: { slug: dto.planSlug, isActive: true } }))?.id
         : undefined;
 
-    const { user, roleName, trialEndsAt, acceptedDocuments } = await this.prisma.$transaction(async (tx) => {
+    const { user, role, trialEndsAt, acceptedDocuments } = await this.prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
         data: { name: dto.companyName, document: dto.companyDocument },
       });
@@ -67,6 +68,10 @@ export class AuthService {
           name: DEFAULT_ADMIN_ROLE,
           description: 'Full access to all company resources',
           isSystem: true,
+          // Every PlanFeature, unconditionally: the system Admin role is what
+          // "full access" means, and it must never be narrowed by a cargo
+          // preset the way an invited team member's role is.
+          allowedFeatures: ALL_FEATURES as string[],
         },
       });
 
@@ -115,7 +120,7 @@ export class AuthService {
 
       return {
         user: createdUser,
-        roleName: role.name,
+        role,
         trialEndsAt: isSubscribeNow ? null : trialEndsAt,
         acceptedDocuments,
       };
@@ -164,7 +169,7 @@ export class AuthService {
       });
     }
 
-    return this.buildSession(user, roleName, tokens);
+    return this.buildSession(user, role, tokens);
   }
 
   async login(dto: LoginDto, client?: ClientInfo): Promise<AuthResult> {
@@ -237,7 +242,7 @@ export class AuthService {
       email: user.email,
     });
 
-    return this.buildSession(user, user.role.name, tokens);
+    return this.buildSession(user, user.role, tokens);
   }
 
   async refresh(rawRefreshToken: string): Promise<AuthResult> {
@@ -266,7 +271,7 @@ export class AuthService {
       data: { revokedAt: new Date(), replacedBy: tokens.refreshTokenId },
     });
 
-    return this.buildSession(user, user.role.name, tokens);
+    return this.buildSession(user, user.role, tokens);
   }
 
   async logout(rawRefreshToken: string, client?: ClientInfo): Promise<void> {
@@ -320,7 +325,11 @@ export class AuthService {
   }
 
   /** Takes the user row rather than a positional list — the field count grew past the point where order was safe to trust. */
-  private buildSession(user: SessionUser, role: string, tokens: AuthTokens): AuthResult {
+  private buildSession(
+    user: SessionUser,
+    role: { name: string; allowedFeatures: string[] },
+    tokens: AuthTokens,
+  ): AuthResult {
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -329,7 +338,8 @@ export class AuthService {
         name: user.name,
         email: user.email,
         companyId: user.companyId,
-        role,
+        role: role.name,
+        roleAllowedFeatures: role.allowedFeatures,
         avatarUrl: user.avatarUrl,
         isSuperAdmin: user.isSuperAdmin,
       },

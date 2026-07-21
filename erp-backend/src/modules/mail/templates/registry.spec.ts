@@ -67,6 +67,12 @@ const FIXTURES: { [K in MailTemplateKey]: MailTemplateData[K] } = {
   [MailTemplateKey.SUBSCRIPTION_CANCELLED]: { name: 'João Pereira', planName: 'Profissional' },
   [MailTemplateKey.PASSWORD_RESET]: { name: 'João Pereira', token: 'tok_abc123' },
   [MailTemplateKey.PASSWORD_CHANGED]: { name: 'João Pereira' },
+  [MailTemplateKey.TEAM_INVITE]: {
+    name: 'Carlos Mendes',
+    companyName: 'Oficina São João',
+    cargoName: 'Mecânico',
+    token: 'tok_abc123',
+  },
 };
 
 function renderAll() {

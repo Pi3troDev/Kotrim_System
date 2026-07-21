@@ -42,6 +42,7 @@ export class ImpersonationService {
             email: session.user.email,
             companyId: session.company.id,
             role: session.user.role,
+            roleAllowedFeatures: session.user.roleAllowedFeatures,
             isSuperAdmin: false,
             impersonatedBy: 'staff',
           },

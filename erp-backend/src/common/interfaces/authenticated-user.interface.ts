@@ -3,6 +3,8 @@ export interface AuthenticatedUser {
   companyId: string;
   roleId: string;
   roleName: string;
+  /** PlanFeature keys this user's cargo may use — see PlanFeatureGuard. */
+  roleAllowedFeatures: string[];
   email: string;
   /** Kotrim platform staff: bypasses the subscription gate, unlocks the admin panel. */
   isSuperAdmin: boolean;

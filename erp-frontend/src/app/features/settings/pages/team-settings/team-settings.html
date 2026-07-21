@@ -1,0 +1,79 @@
+<div class="team-settings">
+  <header class="team-settings__header">
+    <div>
+      <h1 class="team-settings__title">Configurações</h1>
+      <p class="team-settings__subtitle">
+        {{ activeCount() }}{{ maxUsers() !== null ? ' de ' + maxUsers() : '' }} usuário{{ activeCount() === 1 ? '' : 's' }}
+      </p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="openInviteDialog()">
+      <mat-icon>person_add</mat-icon>
+      Convidar
+    </button>
+  </header>
+
+  <app-settings-tabs />
+
+  <div class="team-settings__table-card">
+    @if (isLoading()) {
+      <div class="team-settings__state">
+        <mat-spinner diameter="32" />
+      </div>
+    } @else if (hasError()) {
+      <div class="team-settings__state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Não foi possível carregar a equipe.</p>
+        <button mat-button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else {
+      <table mat-table [dataSource]="members()" class="team-settings__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
+          <td mat-cell *matCellDef="let member">
+            <div class="team-settings__name">
+              <span>{{ member.name }}</span>
+              <span class="team-settings__email">{{ member.email }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cargo">
+          <th mat-header-cell *matHeaderCellDef>Cargo</th>
+          <td mat-cell *matCellDef="let member">{{ member.isSystemAdmin ? 'Administrador' : member.cargo }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Situação</th>
+          <td mat-cell *matCellDef="let member">
+            @if (!member.isActive) {
+              <span class="team-settings__status-chip team-settings__status-chip--inactive">Inativo</span>
+            } @else if (!member.hasJoined) {
+              <span class="team-settings__status-chip team-settings__status-chip--pending">Convite pendente</span>
+            } @else {
+              <span class="team-settings__status-chip">Ativo</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let member" class="team-settings__actions">
+            @if (!member.isSystemAdmin && member.id !== currentUserId()) {
+              <button
+                mat-icon-button
+                type="button"
+                (click)="confirmToggleActive(member)"
+                [attr.aria-label]="member.isActive ? 'Desativar' : 'Reativar'"
+              >
+                <mat-icon>{{ member.isActive ? 'block' : 'restart_alt' }}</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    }
+  </div>
+</div>

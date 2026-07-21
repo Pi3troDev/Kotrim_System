@@ -74,7 +74,7 @@ export interface ImpersonationSession {
   accessToken: string;
   expiresInMinutes: number;
   company: { id: string; name: string };
-  user: { id: string; name: string; email: string; role: string };
+  user: { id: string; name: string; email: string; role: string; roleAllowedFeatures: string[] };
 }
 
 // ── SaaS metrics ────────────────────────────────────────────────────────────

@@ -1,0 +1,23 @@
+.invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  min-width: 380px;
+
+  &__field {
+    width: 100%;
+  }
+
+  &__hint {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+}
+
+@media (max-width: 600px) {
+  .invite-form {
+    min-width: 0;
+  }
+}

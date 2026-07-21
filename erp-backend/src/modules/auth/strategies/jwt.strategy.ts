@@ -33,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       companyId: user.companyId,
       roleId: user.roleId,
       roleName: user.role.name,
+      roleAllowedFeatures: user.role.allowedFeatures,
       email: user.email,
       // Forced off while impersonating. Support looking at a customer's account
       // holds the customer's powers, not their own — otherwise a session meant

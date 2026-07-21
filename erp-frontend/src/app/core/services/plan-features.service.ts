@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { SubscriptionService } from '../../features/subscription/services/subscription.service';
 import { PlanFeature, Subscription } from '../../features/subscription/interfaces/subscription.interfaces';
+import { AuthService } from './auth.service';
 
 /**
  * Holds the features the current company's plan unlocks.
@@ -15,6 +16,7 @@ import { PlanFeature, Subscription } from '../../features/subscription/interface
 @Injectable({ providedIn: 'root' })
 export class PlanFeaturesService {
   private readonly subscriptionService = inject(SubscriptionService);
+  private readonly authService = inject(AuthService);
 
   private readonly features = signal<PlanFeature[] | null>(null);
   private readonly subscription = signal<Subscription | null>(null);
@@ -34,12 +36,17 @@ export class PlanFeaturesService {
   }
 
   /**
-   * Unknown features resolve to false. A brief "menu item missing" while the
-   * plan loads is recoverable; flashing Financeiro at a customer who did not buy
-   * it is not.
+   * True only when both the plan and the user's own cargo include it — a
+   * Mecânico on Oficina Plus still has no reason to see Financeiro.
+   *
+   * Unknown resolves to false either way. A brief "menu item missing" while
+   * the session loads is recoverable; flashing Financeiro at someone who
+   * cannot open it is not.
    */
   has(feature: PlanFeature): boolean {
-    return this.features()?.includes(feature) ?? false;
+    const planAllows = this.features()?.includes(feature) ?? false;
+    const roleAllows = this.authService.currentUser()?.roleAllowedFeatures.includes(feature) ?? false;
+    return planAllows && roleAllows;
   }
 
   clear(): void {

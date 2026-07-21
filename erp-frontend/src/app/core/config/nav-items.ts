@@ -20,6 +20,9 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Funcionários', icon: 'badge', route: '/employees', feature: 'EMPLOYEES' },
   { label: 'Agenda', icon: 'event', route: '/agenda', feature: 'AGENDA' },
   { label: 'Relatórios', icon: 'bar_chart', route: '/reports', feature: 'REPORTS' },
-  { label: 'Configurações', icon: 'settings', route: '/settings', feature: 'SETTINGS' },
+  // No `feature` gate: every login, regardless of cargo, can always reach
+  // their own profile and preferences here — see settings.routes.ts, where
+  // only the Empresa/Equipe tabs (not this entry point) require SETTINGS.
+  { label: 'Configurações', icon: 'settings', route: '/settings' },
   { label: 'Painel Kotrim', icon: 'admin_panel_settings', route: '/admin', superAdminOnly: true },
 ];

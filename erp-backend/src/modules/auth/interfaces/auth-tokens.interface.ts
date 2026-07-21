@@ -13,6 +13,8 @@ export interface AuthenticatedSession {
     email: string;
     companyId: string;
     role: string;
+    /** PlanFeature keys this user's cargo may use — see PlanFeatureGuard. */
+    roleAllowedFeatures: string[];
     avatarUrl: string | null;
     isSuperAdmin: boolean;
   };

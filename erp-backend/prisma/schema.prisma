@@ -242,6 +242,16 @@ model Role {
   name        String
   description String?
   isSystem    Boolean  @default(false)
+  /// `PlanFeature` keys this role may use, independent of what the company's
+  /// plan unlocks — the *effective* access a user gets is the intersection of
+  /// this and the plan's own features (see PlanFeatureGuard). Lives as a plain
+  /// string array, not the dormant Permission/RolePermission tables below:
+  /// this system gates whole modules by job title ("Mecânico sees Agenda, not
+  /// Financeiro"), not per-action CRUD permissions, so a many-to-many is more
+  /// ceremony than the feature warrants. The system Admin role gets every
+  /// PlanFeature value here, which is what makes it behave as "full access"
+  /// without special-casing it anywhere else.
+  allowedFeatures String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

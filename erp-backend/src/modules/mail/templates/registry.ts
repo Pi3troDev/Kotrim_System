@@ -11,6 +11,7 @@ import {
   subscriptionUpgradedTemplate,
 } from './messages/subscription.templates';
 import { passwordChangedTemplate, passwordResetTemplate } from './messages/security.templates';
+import { teamInviteTemplate } from './messages/team-invite.template';
 import {
   MailContext,
   MailTemplateData,
@@ -39,6 +40,7 @@ const REGISTRY: { [K in MailTemplateKey]: TemplateRenderers<K> } = {
   [MailTemplateKey.SUBSCRIPTION_CANCELLED]: subscriptionCancelledTemplate,
   [MailTemplateKey.PASSWORD_RESET]: passwordResetTemplate,
   [MailTemplateKey.PASSWORD_CHANGED]: passwordChangedTemplate,
+  [MailTemplateKey.TEAM_INVITE]: teamInviteTemplate,
 };
 
 export interface RenderedMail {

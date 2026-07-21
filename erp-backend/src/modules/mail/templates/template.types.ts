@@ -28,6 +28,8 @@ export enum MailTemplateKey {
   // Security
   PASSWORD_RESET = 'PASSWORD_RESET',
   PASSWORD_CHANGED = 'PASSWORD_CHANGED',
+  // Team
+  TEAM_INVITE = 'TEAM_INVITE',
 }
 
 /**
@@ -126,6 +128,13 @@ export interface PasswordChangedData {
   name: string;
 }
 
+export interface TeamInviteData {
+  name: string;
+  companyName: string;
+  cargoName: string;
+  token: string;
+}
+
 /** The single source of truth mapping each key to its payload. */
 export interface MailTemplateData {
   [MailTemplateKey.WELCOME_TRIAL]: WelcomeTrialData;
@@ -140,6 +149,7 @@ export interface MailTemplateData {
   [MailTemplateKey.SUBSCRIPTION_CANCELLED]: SubscriptionCancelledData;
   [MailTemplateKey.PASSWORD_RESET]: PasswordResetData;
   [MailTemplateKey.PASSWORD_CHANGED]: PasswordChangedData;
+  [MailTemplateKey.TEAM_INVITE]: TeamInviteData;
 }
 
 export type Renderer<K extends MailTemplateKey> = (
@@ -175,6 +185,7 @@ export const STAFF_NOTIFIED_TEMPLATES: ReadonlySet<MailTemplateKey> = new Set([
  */
 export const REDACTED_PAYLOAD_FIELDS: Partial<Record<MailTemplateKey, readonly string[]>> = {
   [MailTemplateKey.PASSWORD_RESET]: ['token'],
+  [MailTemplateKey.TEAM_INVITE]: ['token'],
 };
 
 /** True when this template's stored payload is missing something it needs to render for real. */
@@ -196,4 +207,5 @@ export const MAIL_TEMPLATE_LABELS: Record<MailTemplateKey, string> = {
   [MailTemplateKey.SUBSCRIPTION_CANCELLED]: 'Assinatura cancelada',
   [MailTemplateKey.PASSWORD_RESET]: 'Recuperação de senha',
   [MailTemplateKey.PASSWORD_CHANGED]: 'Senha alterada',
+  [MailTemplateKey.TEAM_INVITE]: 'Convite de equipe',
 };

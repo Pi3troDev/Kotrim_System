@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { imageUploadOptions, persistImage, publicUploadPath } from '../../common/utils/image-upload.util';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
-type UserWithRole = User & { role: { name: string } };
+type UserWithRole = User & { role: { name: string; allowedFeatures: string[] } };
 
 export interface UserProfile {
   id: string;
@@ -27,14 +27,14 @@ export class UsersService {
   findByEmail(email: string): Promise<UserWithRole | null> {
     return this.prisma.user.findFirst({
       where: { email, deletedAt: null },
-      include: { role: { select: { name: true } } },
+      include: { role: { select: { name: true, allowedFeatures: true } } },
     });
   }
 
   findById(id: string): Promise<UserWithRole | null> {
     return this.prisma.user.findFirst({
       where: { id, deletedAt: null },
-      include: { role: { select: { name: true } } },
+      include: { role: { select: { name: true, allowedFeatures: true } } },
     });
   }
 
@@ -58,7 +58,7 @@ export class UsersService {
     const updated = await this.prisma.user.update({
       where: { id },
       data: dto,
-      include: { role: { select: { name: true } } },
+      include: { role: { select: { name: true, allowedFeatures: true } } },
     });
     return this.toProfile(updated);
   }
@@ -72,7 +72,7 @@ export class UsersService {
     const updated = await this.prisma.user.update({
       where: { id },
       data: { avatarUrl },
-      include: { role: { select: { name: true } } },
+      include: { role: { select: { name: true, allowedFeatures: true } } },
     });
     return this.toProfile(updated);
   }

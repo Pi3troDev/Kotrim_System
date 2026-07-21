@@ -85,9 +85,12 @@ export const routes: Routes = [
         canActivate: [planFeatureGuard('REPORTS')],
       },
       {
+        // No feature gate here on purpose: Preferências and Meu Perfil (inside
+        // SETTINGS_ROUTES) are personal account settings, open to every login
+        // regardless of cargo. Empresa and Equipe are the parts that actually
+        // need SETTINGS, and are gated per-route instead.
         path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
-        canActivate: [planFeatureGuard('SETTINGS')],
       },
       {
         path: 'admin',

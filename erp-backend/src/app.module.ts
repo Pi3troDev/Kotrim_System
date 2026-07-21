@@ -38,6 +38,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { LegalModule } from './modules/legal/legal.module';
+import { TeamModule } from './modules/team/team.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -77,6 +78,7 @@ import { AppService } from './app.service';
     AuditModule,
     AuthModule,
     UsersModule,
+    TeamModule,
     DashboardModule,
     ClientsModule,
     VehiclesModule,

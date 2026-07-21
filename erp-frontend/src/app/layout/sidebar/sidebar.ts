@@ -17,18 +17,17 @@ export class Sidebar {
   private readonly planFeatures = inject(PlanFeaturesService);
 
   /**
-   * Hides what the plan does not include, and staff-only entries from everyone
-   * else. Cosmetic: typing the URL is stopped by the route guard, and the API
-   * answers 403 regardless.
+   * Hides what the plan or the user's own cargo does not include, and
+   * staff-only entries from everyone else. Cosmetic: typing the URL is
+   * stopped by the route guard, and the API answers 403 regardless.
    */
   readonly navItems = computed(() => {
     const isSuperAdmin = this.authService.currentUser()?.isSuperAdmin ?? false;
-    const features = this.planFeatures.currentFeatures();
 
     return NAV_ITEMS.filter((item) => {
       if (item.superAdminOnly && !isSuperAdmin) return false;
       if (!item.feature || isSuperAdmin) return true;
-      return features?.includes(item.feature) ?? false;
+      return this.planFeatures.has(item.feature);
     });
   });
 }

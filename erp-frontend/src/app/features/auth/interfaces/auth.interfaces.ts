@@ -4,6 +4,8 @@ export interface AuthenticatedUser {
   email: string;
   companyId: string;
   role: string;
+  /** PlanFeature keys this user's cargo may use — intersected with the plan's own features. */
+  roleAllowedFeatures: string[];
   avatarUrl?: string | null;
   /** Kotrim platform staff: unlocks the admin panel. Not a workshop role. */
   isSuperAdmin?: boolean;

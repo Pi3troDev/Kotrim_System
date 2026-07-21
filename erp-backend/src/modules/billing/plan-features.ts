@@ -59,13 +59,11 @@ export const PLAN_FEATURES: Readonly<Record<string, readonly PlanFeature[]>> = {
 
 /**
  * Login seats. Declared so the pricing page can quote them, but nothing
- * enforces them yet: there is no user-management CRUD, so every company has
- * exactly the admin created at registration and there is nothing to limit.
- * Enforcement lands with the Users & Permissions phase.
- *
  * Not to be confused with PLAN_MAX_EMPLOYEES: a user is a login, an employee is
  * a mechanic on the roster. A workshop with eight mechanics may well have two
  * logins.
+ *
+ * Enforced on create in TeamMembersService (the Users & Permissions phase).
  */
 export const PLAN_MAX_USERS: Readonly<Record<string, number | null>> = {
   essencial: 3,
@@ -100,6 +98,20 @@ export function maxEmployeesForSubscription(subscription: SubscriptionForFeature
   if (!slug) return PLAN_MAX_EMPLOYEES['essencial'];
 
   return slug in PLAN_MAX_EMPLOYEES ? PLAN_MAX_EMPLOYEES[slug] : PLAN_MAX_EMPLOYEES['essencial'];
+}
+
+/**
+ * How many logins (the company admin plus invited team members) this
+ * subscription may have. Same trial/fallback rules as `maxEmployeesForSubscription`.
+ */
+export function maxUsersForSubscription(subscription: SubscriptionForFeatures | null): number | null {
+  if (!subscription) return 0;
+  if (subscription.status === SubscriptionStatus.TRIAL) return UNLIMITED;
+
+  const slug = subscription.plan?.slug;
+  if (!slug) return PLAN_MAX_USERS['essencial'];
+
+  return slug in PLAN_MAX_USERS ? PLAN_MAX_USERS[slug] : PLAN_MAX_USERS['essencial'];
 }
 
 /** Category types follow whichever module consumes them (decision 04). */

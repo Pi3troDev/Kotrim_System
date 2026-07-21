@@ -21,7 +21,7 @@ export interface ImpersonationSession {
   accessToken: string;
   expiresInMinutes: number;
   company: { id: string; name: string };
-  user: { id: string; name: string; email: string; role: string };
+  user: { id: string; name: string; email: string; role: string; roleAllowedFeatures: string[] };
 }
 
 /**
@@ -67,7 +67,7 @@ export class ImpersonationService {
     const target = await this.prisma.user.findFirst({
       where: { companyId, deletedAt: null, isActive: true },
       orderBy: { createdAt: 'asc' },
-      include: { role: { select: { name: true } } },
+      include: { role: { select: { name: true, allowedFeatures: true } } },
     });
     if (!target) {
       throw new BadRequestException('Esta empresa não tem nenhum usuário ativo para visualizar.');
@@ -112,7 +112,13 @@ export class ImpersonationService {
       accessToken,
       expiresInMinutes: 30,
       company,
-      user: { id: target.id, name: target.name, email: target.email, role: target.role.name },
+      user: {
+        id: target.id,
+        name: target.name,
+        email: target.email,
+        role: target.role.name,
+        roleAllowedFeatures: target.role.allowedFeatures,
+      },
     };
   }
 

@@ -104,6 +104,10 @@ export class MailService {
     this.emit(MailTemplateKey.PASSWORD_CHANGED, to, data);
   }
 
+  teamInvite(to: MailRecipient, data: MailTemplateData[MailTemplateKey.TEAM_INVITE]): void {
+    this.emit(MailTemplateKey.TEAM_INVITE, to, data);
+  }
+
   /** Awaits delivery. For the admin "resend" action, which needs to report a result. */
   async resend<K extends MailTemplateKey>(
     key: K,
