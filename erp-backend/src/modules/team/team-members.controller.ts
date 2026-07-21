@@ -52,4 +52,14 @@ export class TeamMembersController {
   ) {
     return this.teamMembersService.update(user.companyId, id, dto, user, client);
   }
+
+  @Post(':id/resend-invite')
+  @ApiOperation({ summary: 'Re-issue the setup link for an invite that has not been claimed yet' })
+  resendInvite(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Client() client: ClientInfo,
+  ) {
+    return this.teamMembersService.resendInvite(user.companyId, id, user, client);
+  }
 }

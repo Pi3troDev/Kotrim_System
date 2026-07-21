@@ -25,4 +25,8 @@ export class TeamService {
   update(id: string, payload: UpdateTeamMemberPayload): Observable<TeamMember> {
     return this.http.patch<TeamMember>(`${this.baseUrl}/${id}`, payload);
   }
+
+  resendInvite(id: string): Observable<TeamMember> {
+    return this.http.post<TeamMember>(`${this.baseUrl}/${id}/resend-invite`, {});
+  }
 }

@@ -206,6 +206,63 @@ export class TeamMembersService {
   }
 
   /**
+   * Re-sends the setup link. Needed whenever the first e-mail never arrived —
+   * a Resend outage, a typo since fixed by IT, or (as happened once) a bad API
+   * key — since the invited address is already taken by the pending user and
+   * a second `invite()` call would just hit the uniqueness check.
+   */
+  async resendInvite(
+    companyId: string,
+    userId: string,
+    actingUser: AuthenticatedUser,
+    client?: ClientInfo,
+  ): Promise<TeamMemberSummary> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, companyId, deletedAt: null },
+      include: { role: { select: { name: true, isSystem: true } } },
+    });
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+    if (user.passwordInitializedAt !== null) {
+      throw new BadRequestException('Este usuário já concluiu o cadastro.');
+    }
+    if (!user.isActive) {
+      throw new BadRequestException('Reative o usuário antes de reenviar o convite.');
+    }
+
+    const company = await this.prisma.company.findUniqueOrThrow({ where: { id: companyId }, select: { name: true } });
+    const { token } = await this.passwordTokenService.issue(user.id, PasswordTokenPurpose.SETUP);
+
+    this.mailService.teamInvite(
+      { email: user.email, name: user.name, userId: user.id, companyId },
+      { name: user.name, companyName: company.name, cargoName: this.cargoLabelFromRoleName(user.role.name), token },
+    );
+
+    this.auditService.record({
+      action: AuditAction.UPDATE,
+      entity: 'User',
+      entityId: user.id,
+      companyId,
+      userId: actingUser.id,
+      changes: { resentInviteTo: user.email },
+      client,
+    });
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      cargo: user.role.isSystem ? null : this.cargoLabelFromRoleName(user.role.name),
+      isSystemAdmin: user.role.isSystem,
+      isActive: user.isActive,
+      hasJoined: false,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+    };
+  }
+
+  /**
    * Seats already claimed never block a deactivate-then-reinvite: only active
    * logins count, so freeing one immediately makes room for the next hire.
    */

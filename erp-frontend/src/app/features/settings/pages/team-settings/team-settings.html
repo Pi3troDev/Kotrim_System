@@ -59,6 +59,17 @@
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let member" class="team-settings__actions">
             @if (!member.isSystemAdmin && member.id !== currentUserId()) {
+              @if (member.isActive && !member.hasJoined) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="resendInvite(member)"
+                  aria-label="Reenviar convite"
+                  matTooltip="Reenviar convite"
+                >
+                  <mat-icon>forward_to_inbox</mat-icon>
+                </button>
+              }
               <button
                 mat-icon-button
                 type="button"

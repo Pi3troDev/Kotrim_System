@@ -3,6 +3,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SettingsTabs } from '../../components/settings-tabs/settings-tabs';
@@ -15,7 +16,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-team-settings-page',
-  imports: [MatTableModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, SettingsTabs],
+  imports: [MatTableModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule, SettingsTabs],
   templateUrl: './team-settings.html',
   styleUrl: './team-settings.scss',
 })
@@ -66,6 +67,13 @@ export class TeamSettingsPage implements OnInit {
           this.load();
         }
       });
+  }
+
+  resendInvite(member: TeamMember): void {
+    this.teamService.resendInvite(member.id).subscribe({
+      next: () => this.snackBar.open(`Convite reenviado para ${member.email}.`, 'Fechar', { duration: 4000 }),
+      error: () => this.snackBar.open('Não foi possível reenviar o convite.', 'Fechar', { duration: 4000 }),
+    });
   }
 
   confirmToggleActive(member: TeamMember): void {
