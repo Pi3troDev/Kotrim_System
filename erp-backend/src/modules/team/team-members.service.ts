@@ -67,8 +67,11 @@ export class TeamMembersService {
     actingUser: AuthenticatedUser,
     client?: ClientInfo,
   ): Promise<TeamMemberSummary> {
+    // Email is globally unique even across soft-deleted rows, so a user removed
+    // by mistake (or genuinely re-hired) would otherwise be stuck forever behind
+    // this same address. Only a *live* account blocks a new invite.
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase().trim() } });
-    if (existing) {
+    if (existing && existing.deletedAt === null) {
       throw new ConflictException('Já existe uma conta com este e-mail.');
     }
 
@@ -105,6 +108,27 @@ export class TeamMembersService {
         },
       });
 
+      if (existing) {
+        // Revives the same row instead of forking a new one under a fresh id —
+        // that keeps whatever audit trail and past work orders it already has
+        // attributed to the same person, and sidesteps the email unique
+        // constraint, which the deleted row still holds.
+        return tx.user.update({
+          where: { id: existing.id },
+          data: {
+            companyId,
+            roleId: role.id,
+            name: dto.name,
+            deletedAt: null,
+            isActive: true,
+            // Re-claimed via a fresh SETUP link, same as a brand-new invite —
+            // the old password must not silently keep working.
+            passwordHash: null,
+            passwordInitializedAt: null,
+          },
+        });
+      }
+
       return tx.user.create({
         data: {
           companyId,
@@ -131,7 +155,7 @@ export class TeamMembersService {
       entityId: user.id,
       companyId,
       userId: actingUser.id,
-      changes: { invited: user.email, cargo: dto.cargo },
+      changes: { invited: user.email, cargo: dto.cargo, revived: Boolean(existing) },
       client,
     });
 
@@ -203,6 +227,60 @@ export class TeamMembersService {
       lastLoginAt: updated.lastLoginAt,
       createdAt: updated.createdAt,
     };
+  }
+
+  /**
+   * Soft-deletes the login. Kept as `deletedAt` (not a hard delete) because a
+   * User is the `userId` on their own audit trail, work orders, mail logs —
+   * removing the row outright would either orphan or cascade-delete history
+   * that has nothing to do with the access decision being made here.
+   */
+  async remove(companyId: string, userId: string, actingUser: AuthenticatedUser, client?: ClientInfo): Promise<void> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, companyId, deletedAt: null },
+      include: { role: { select: { isSystem: true } } },
+    });
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (userId === actingUser.id) {
+      throw new ForbiddenException('Você não pode excluir o próprio acesso por aqui.');
+    }
+
+    if (user.role.isSystem) {
+      const otherActiveAdmins = await this.prisma.user.count({
+        where: { companyId, deletedAt: null, isActive: true, role: { isSystem: true }, id: { not: userId } },
+      });
+      if (otherActiveAdmins === 0) {
+        throw new ForbiddenException('A empresa precisa de pelo menos um administrador ativo.');
+      }
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { deletedAt: new Date(), isActive: false },
+      }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+      this.prisma.passwordToken.updateMany({
+        where: { userId, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    this.auditService.record({
+      action: AuditAction.DELETE,
+      entity: 'User',
+      entityId: userId,
+      companyId,
+      userId: actingUser.id,
+      changes: { deletedEmail: user.email },
+      client,
+    });
   }
 
   /**

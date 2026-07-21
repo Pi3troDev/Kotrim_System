@@ -75,8 +75,18 @@
                 type="button"
                 (click)="confirmToggleActive(member)"
                 [attr.aria-label]="member.isActive ? 'Desativar' : 'Reativar'"
+                [matTooltip]="member.isActive ? 'Desativar' : 'Reativar'"
               >
                 <mat-icon>{{ member.isActive ? 'block' : 'restart_alt' }}</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                (click)="confirmRemove(member)"
+                aria-label="Excluir"
+                matTooltip="Excluir"
+              >
+                <mat-icon>delete</mat-icon>
               </button>
             }
           </td>

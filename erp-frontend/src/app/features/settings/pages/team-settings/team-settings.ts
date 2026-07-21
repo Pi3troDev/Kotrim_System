@@ -108,4 +108,28 @@ export class TeamSettingsPage implements OnInit {
         });
       });
   }
+
+  confirmRemove(member: TeamMember): void {
+    const data: ConfirmDialogData = {
+      title: 'Excluir usuário',
+      message: `"${member.name}" perde o acesso ao sistema e some da lista da equipe. O histórico de ações dela é mantido para fins de auditoria, mas isso não pode ser desfeito pela tela — só reconvidando com um novo cadastro.`,
+      confirmLabel: 'Excluir',
+      danger: true,
+    };
+
+    this.dialog
+      .open(ConfirmDialog, { data, width: '420px' })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) return;
+
+        this.teamService.remove(member.id).subscribe({
+          next: () => {
+            this.snackBar.open('Usuário excluído.', 'Fechar', { duration: 3000 });
+            this.load();
+          },
+          error: () => this.snackBar.open('Não foi possível excluir esse usuário.', 'Fechar', { duration: 4000 }),
+        });
+      });
+  }
 }

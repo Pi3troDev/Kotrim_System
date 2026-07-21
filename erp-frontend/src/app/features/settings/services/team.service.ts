@@ -29,4 +29,8 @@ export class TeamService {
   resendInvite(id: string): Observable<TeamMember> {
     return this.http.post<TeamMember>(`${this.baseUrl}/${id}/resend-invite`, {});
   }
+
+  remove(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

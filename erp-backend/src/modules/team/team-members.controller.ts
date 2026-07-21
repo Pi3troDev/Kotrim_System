@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Client } from '../../common/decorators/client-info.decorator';
@@ -51,6 +51,13 @@ export class TeamMembersController {
     @Client() client: ClientInfo,
   ) {
     return this.teamMembersService.update(user.companyId, id, dto, user, client);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Remove a team member (soft delete — audit trail is kept)' })
+  remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Client() client: ClientInfo) {
+    return this.teamMembersService.remove(user.companyId, id, user, client);
   }
 
   @Post(':id/resend-invite')
