@@ -245,12 +245,41 @@ export class AuthService {
     return this.buildSession(user, user.role, tokens);
   }
 
-  async refresh(rawRefreshToken: string): Promise<AuthResult> {
+  async refresh(rawRefreshToken: string, client?: ClientInfo): Promise<AuthResult> {
     const tokenHash = sha256(rawRefreshToken);
 
     const stored = await this.prisma.refreshToken.findUnique({ where: { tokenHash } });
 
-    if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+    if (!stored) {
+      throw new UnauthorizedException('Refresh token is invalid or expired');
+    }
+
+    // A token that was already rotated away being presented again means one of
+    // two things happened: a stale retry (harmless), or someone else is holding
+    // a copy of a token the legitimate user has since moved past (theft). There
+    // is no way to tell those apart from here, so this is treated as theft —
+    // every other active token for the user is killed, forcing a fresh login
+    // everywhere rather than leaving a possibly-compromised session alive.
+    if (stored.revokedAt) {
+      const revoked = await this.prisma.refreshToken.updateMany({
+        where: { userId: stored.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+
+      this.auditService.record({
+        action: AuditAction.REFRESH_TOKEN_REUSE_DETECTED,
+        result: AuditResult.FAILURE,
+        entity: 'User',
+        entityId: stored.userId,
+        userId: stored.userId,
+        changes: { sessionsRevoked: revoked.count },
+        client,
+      });
+
+      throw new UnauthorizedException('Refresh token is invalid or expired');
+    }
+
+    if (stored.expiresAt < new Date()) {
       throw new UnauthorizedException('Refresh token is invalid or expired');
     }
 

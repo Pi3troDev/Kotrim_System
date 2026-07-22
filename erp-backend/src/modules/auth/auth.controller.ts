@@ -67,13 +67,14 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @Client() client: ClientInfo,
   ): Promise<AuthenticatedSession> {
     const rawRefreshToken = (req.cookies as Record<string, string>)?.[REFRESH_COOKIE_NAME];
     if (!rawRefreshToken) {
       throw new UnauthorizedException('Missing refresh token');
     }
 
-    const { refreshToken, ...session } = await this.authService.refresh(rawRefreshToken);
+    const { refreshToken, ...session } = await this.authService.refresh(rawRefreshToken, client);
     this.setRefreshCookie(res, refreshToken);
     return session;
   }
