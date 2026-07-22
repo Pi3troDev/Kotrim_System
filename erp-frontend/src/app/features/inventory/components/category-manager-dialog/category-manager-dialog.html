@@ -1,10 +1,10 @@
-<h2 mat-dialog-title>Categorias de estoque</h2>
+<h2 mat-dialog-title>{{ title }}</h2>
 
 <mat-dialog-content class="category-manager">
   <div class="category-manager__add">
     <mat-form-field appearance="outline" class="category-manager__field">
       <mat-label>Nova categoria</mat-label>
-      <input matInput [formControl]="nameControl" placeholder="Ex.: Filtros" (keydown.enter)="add()" />
+      <input matInput [formControl]="nameControl" [placeholder]="namePlaceholder" (keydown.enter)="add()" />
     </mat-form-field>
     <button mat-icon-button type="button" color="primary" [disabled]="isSubmitting()" (click)="add()" aria-label="Adicionar categoria">
       @if (isSubmitting()) {

@@ -130,7 +130,7 @@ export class ItemList implements OnInit, OnDestroy {
 
   openCategoryManager(): void {
     this.dialog
-      .open(CategoryManagerDialog, { width: '440px' })
+      .open(CategoryManagerDialog, { width: '440px', data: { type: 'INVENTORY' } })
       .afterClosed()
       .subscribe((changed: boolean | undefined) => {
         if (changed) this.load();

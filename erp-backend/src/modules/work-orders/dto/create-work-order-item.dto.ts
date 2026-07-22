@@ -1,11 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import { WorkOrderItemType } from '@prisma/client';
-import { IsEnum, IsNumber, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateWorkOrderItemDto {
   @ApiProperty({ enum: WorkOrderItemType, example: WorkOrderItemType.SERVICE })
   @IsEnum(WorkOrderItemType)
   type: WorkOrderItemType;
+
+  @ApiPropertyOptional({
+    description: 'Links this line to an inventory item so its quantity is deducted from stock automatically.',
+  })
+  @IsOptional()
+  @IsUUID()
+  inventoryItemId?: string;
 
   @ApiProperty({ example: 'Troca de óleo e filtro' })
   @IsString()

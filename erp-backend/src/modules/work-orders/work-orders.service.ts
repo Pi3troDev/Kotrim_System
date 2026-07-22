@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { FinancialStatus, Prisma, WorkOrderItemType, WorkOrderStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { paginate, PaginatedResult } from '../../common/interfaces/paginated-result.interface';
+import { InventoryService } from '../inventory/inventory.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { CreateWorkOrderItemDto } from './dto/create-work-order-item.dto';
 import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
@@ -37,7 +38,10 @@ function round2(value: number): number {
 
 @Injectable()
 export class WorkOrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly inventoryService: InventoryService,
+  ) {}
 
   async create(companyId: string, userId: string, dto: CreateWorkOrderDto) {
     await this.assertClientBelongsToCompany(companyId, dto.clientId);
@@ -55,7 +59,7 @@ export class WorkOrdersService {
       try {
         const created = await this.prisma.$transaction(async (tx) => {
           const number = await this.nextWorkOrderNumber(tx, companyId);
-          return tx.workOrder.create({
+          const workOrder = await tx.workOrder.create({
             data: {
               companyId,
               clientId: dto.clientId,
@@ -75,6 +79,14 @@ export class WorkOrdersService {
             },
             ...workOrderInclude,
           });
+
+          for (const item of items) {
+            if (item.inventoryItemId) {
+              await this.inventoryService.deductStock(tx, companyId, item.inventoryItemId, item.quantity, workOrder.id);
+            }
+          }
+
+          return workOrder;
         });
         return this.serialize(created);
       } catch (error) {
@@ -206,6 +218,20 @@ export class WorkOrdersService {
           where: { workOrderId: id, companyId, deletedAt: null, paidAmount: 0 },
           data: { status: FinancialStatus.CANCELLED },
         });
+
+        const linkedItems = await tx.workOrderItem.findMany({
+          where: { workOrderId: id, inventoryItemId: { not: null } },
+        });
+        for (const item of linkedItems) {
+          await this.inventoryService.restoreStock(
+            tx,
+            companyId,
+            item.inventoryItemId!,
+            Number(item.quantity),
+            id,
+            'Estorno (ordem de serviço cancelada)',
+          );
+        }
       }
 
       return workOrder;
@@ -216,7 +242,14 @@ export class WorkOrdersService {
 
   async addItem(companyId: string, workOrderId: string, dto: CreateWorkOrderItemDto) {
     await this.assertWorkOrderIsEditable(companyId, workOrderId);
-    await this.prisma.workOrderItem.create({ data: { workOrderId, ...this.toItemData(dto) } });
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.workOrderItem.create({ data: { workOrderId, ...this.toItemData(dto) } });
+      if (dto.inventoryItemId) {
+        await this.inventoryService.deductStock(tx, companyId, dto.inventoryItemId, dto.quantity, workOrderId);
+      }
+    });
+
     await this.recomputeAmounts(workOrderId);
     return this.findOne(companyId, workOrderId);
   }
@@ -231,16 +264,36 @@ export class WorkOrdersService {
 
     const quantity = dto.quantity ?? Number(item.quantity);
     const unitPrice = dto.unitPrice ?? Number(item.unitPrice);
+    // Changing which inventory item a line is linked to, after creation, is not
+    // supported — only the quantity against the item it was created with.
+    const quantityDelta = round2(quantity - Number(item.quantity));
 
-    await this.prisma.workOrderItem.update({
-      where: { id: itemId },
-      data: {
-        type: dto.type ?? item.type,
-        description: dto.description ?? item.description,
-        quantity,
-        unitPrice,
-        totalPrice: round2(quantity * unitPrice),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.workOrderItem.update({
+        where: { id: itemId },
+        data: {
+          type: dto.type ?? item.type,
+          description: dto.description ?? item.description,
+          quantity,
+          unitPrice,
+          totalPrice: round2(quantity * unitPrice),
+        },
+      });
+
+      if (item.inventoryItemId && quantityDelta !== 0) {
+        if (quantityDelta > 0) {
+          await this.inventoryService.deductStock(tx, companyId, item.inventoryItemId, quantityDelta, workOrderId);
+        } else {
+          await this.inventoryService.restoreStock(
+            tx,
+            companyId,
+            item.inventoryItemId,
+            -quantityDelta,
+            workOrderId,
+            'Estorno (quantidade reduzida na ordem de serviço)',
+          );
+        }
+      }
     });
 
     await this.recomputeAmounts(workOrderId);
@@ -255,7 +308,20 @@ export class WorkOrdersService {
       throw new NotFoundException('Work order item not found');
     }
 
-    await this.prisma.workOrderItem.delete({ where: { id: itemId } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.workOrderItem.delete({ where: { id: itemId } });
+      if (item.inventoryItemId) {
+        await this.inventoryService.restoreStock(
+          tx,
+          companyId,
+          item.inventoryItemId,
+          Number(item.quantity),
+          workOrderId,
+          'Estorno (item removido da ordem de serviço)',
+        );
+      }
+    });
+
     await this.recomputeAmounts(workOrderId);
     return this.findOne(companyId, workOrderId);
   }
@@ -354,6 +420,7 @@ export class WorkOrdersService {
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       totalPrice: round2(item.quantity * item.unitPrice),
+      inventoryItemId: item.inventoryItemId,
     };
   }
 

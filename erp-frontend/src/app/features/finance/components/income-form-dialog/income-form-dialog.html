@@ -66,6 +66,13 @@
       </mat-select>
     </mat-form-field>
 
+    <div class="income-form__field income-form__manage-accounts">
+      <button mat-button type="button" color="primary" (click)="openCategoryManager()">
+        <mat-icon>settings</mat-icon>
+        Gerenciar categorias
+      </button>
+    </div>
+
     <mat-form-field appearance="outline" class="income-form__field">
       <mat-label>Conta esperada</mat-label>
       <mat-select formControlName="accountId">

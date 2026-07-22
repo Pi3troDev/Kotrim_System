@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, StockMovementType } from '@prisma/client';
+import { NotificationType, Prisma, StockMovementType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { paginate, PaginatedResult } from '../../common/interfaces/paginated-result.interface';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
@@ -204,6 +204,105 @@ export class InventoryService {
     });
 
     return movements.map((movement) => ({ ...movement, quantity: Number(movement.quantity) }));
+  }
+
+  /**
+   * Deducts stock for a part consumed by a work order, inside the caller's
+   * transaction — this must land atomically with whatever wrote the
+   * WorkOrderItem, or the two can drift apart on a mid-write crash.
+   *
+   * Throws rather than letting stock go negative, same rule as the manual
+   * OUT movement in `createMovement`. `referenceId` is the work order's id,
+   * so `StockMovement` history reads the same as any other movement.
+   */
+  async deductStock(
+    tx: Prisma.TransactionClient,
+    companyId: string,
+    inventoryItemId: string,
+    quantity: number,
+    referenceId: string,
+  ): Promise<void> {
+    const item = await tx.inventoryItem.findFirst({ where: { id: inventoryItemId, companyId, deletedAt: null } });
+    if (!item) {
+      throw new NotFoundException('Inventory item not found');
+    }
+
+    const currentQuantity = Number(item.quantityInStock);
+    const minimumStock = Number(item.minimumStock);
+    const newQuantity = round2(currentQuantity - quantity);
+
+    if (newQuantity < 0) {
+      throw new BadRequestException(`Estoque insuficiente para "${item.name}" (disponível: ${currentQuantity}).`);
+    }
+
+    await tx.inventoryItem.update({ where: { id: inventoryItemId }, data: { quantityInStock: newQuantity } });
+    await tx.stockMovement.create({
+      data: {
+        companyId,
+        inventoryItemId,
+        type: StockMovementType.OUT,
+        quantity,
+        reason: 'Baixa automática (ordem de serviço)',
+        referenceId,
+      },
+    });
+
+    // Warn only on the crossing, not on every subsequent deduction while
+    // already low — otherwise every part added to an OS after the item first
+    // dips below minimum re-notifies everyone for no new information.
+    if (currentQuantity > minimumStock && newQuantity <= minimumStock) {
+      await this.notifyLowStock(tx, companyId, item.name, newQuantity, minimumStock);
+    }
+  }
+
+  /**
+   * Reverses a prior automatic deduction — a work-order item removed, or the
+   * whole work order cancelled. Silently no-ops if the item itself is gone
+   * (soft-deleted since), since that must never block removing/cancelling
+   * the work order it was linked from.
+   */
+  async restoreStock(
+    tx: Prisma.TransactionClient,
+    companyId: string,
+    inventoryItemId: string,
+    quantity: number,
+    referenceId: string,
+    reason: string,
+  ): Promise<void> {
+    const item = await tx.inventoryItem.findFirst({ where: { id: inventoryItemId, companyId } });
+    if (!item) {
+      return;
+    }
+
+    const newQuantity = round2(Number(item.quantityInStock) + quantity);
+
+    await tx.inventoryItem.update({ where: { id: inventoryItemId }, data: { quantityInStock: newQuantity } });
+    await tx.stockMovement.create({
+      data: { companyId, inventoryItemId, type: StockMovementType.IN, quantity, reason, referenceId },
+    });
+  }
+
+  /** One notification row per active user of the company — mirrors the trial/renewal alert fan-out. */
+  private async notifyLowStock(
+    tx: Prisma.TransactionClient,
+    companyId: string,
+    itemName: string,
+    quantityInStock: number,
+    minimumStock: number,
+  ): Promise<void> {
+    const users = await tx.user.findMany({ where: { companyId, deletedAt: null, isActive: true }, select: { id: true } });
+    if (users.length === 0) return;
+
+    await tx.notification.createMany({
+      data: users.map((user) => ({
+        companyId,
+        userId: user.id,
+        type: NotificationType.WARNING,
+        title: 'Estoque baixo',
+        message: `"${itemName}" está com estoque baixo: restam ${quantityInStock}, mínimo configurado é ${minimumStock}.`,
+        link: '/inventory',
+      })),
+    });
   }
 
   private async assertItemExists(companyId: string, id: string): Promise<void> {

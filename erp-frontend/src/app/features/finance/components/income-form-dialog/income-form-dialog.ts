@@ -24,6 +24,7 @@ import { IncomesService } from '../../services/incomes.service';
 import { AccountsService } from '../../services/accounts.service';
 import { Account, CreateIncomePayload, Income } from '../../interfaces/finance.interfaces';
 import { AccountManagerDialog } from '../account-manager-dialog/account-manager-dialog';
+import { CategoryManagerDialog } from '../../../inventory/components/category-manager-dialog/category-manager-dialog';
 
 export interface IncomeFormDialogData {
   income?: Income;
@@ -147,10 +148,19 @@ export class IncomeFormDialog implements OnInit, OnDestroy {
 
   openAccountManager(): void {
     this.dialog
-      .open(AccountManagerDialog, { width: '560px' })
+      .open(AccountManagerDialog, { width: '620px' })
       .afterClosed()
       .subscribe((changed: boolean | undefined) => {
         if (changed) this.loadAccounts();
+      });
+  }
+
+  openCategoryManager(): void {
+    this.dialog
+      .open(CategoryManagerDialog, { width: '440px', data: { type: 'INCOME' } })
+      .afterClosed()
+      .subscribe((changed: boolean | undefined) => {
+        if (changed) this.loadCategories();
       });
   }
 

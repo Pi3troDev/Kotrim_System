@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CategoriesService } from '../../services/categories.service';
-import { Category } from '../../interfaces/inventory.interfaces';
+import { Category, CategoryType } from '../../interfaces/inventory.interfaces';
+
+export interface CategoryManagerDialogData {
+  type: CategoryType;
+}
+
+const CATEGORY_TYPE_TITLES: Record<CategoryType, string> = {
+  INVENTORY: 'Categorias de estoque',
+  EXPENSE: 'Categorias de despesa',
+  INCOME: 'Categorias de receita',
+};
+
+const CATEGORY_TYPE_PLACEHOLDERS: Record<CategoryType, string> = {
+  INVENTORY: 'Ex.: Filtros',
+  EXPENSE: 'Ex.: Aluguel',
+  INCOME: 'Ex.: Serviços',
+};
 
 @Component({
   selector: 'app-category-manager-dialog',
@@ -30,10 +46,13 @@ export class CategoryManagerDialog {
   private readonly categoriesService = inject(CategoriesService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialogRef = inject(MatDialogRef<CategoryManagerDialog>);
+  private readonly data = inject<CategoryManagerDialogData>(MAT_DIALOG_DATA);
 
   readonly categories = signal<Category[]>([]);
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
+  readonly title = CATEGORY_TYPE_TITLES[this.data.type];
+  readonly namePlaceholder = CATEGORY_TYPE_PLACEHOLDERS[this.data.type];
   /** Tracks category changes so the parent list can refresh if anything actually changed. */
   private didChange = false;
 
@@ -45,7 +64,7 @@ export class CategoryManagerDialog {
 
   load(): void {
     this.isLoading.set(true);
-    this.categoriesService.list('INVENTORY').subscribe({
+    this.categoriesService.list(this.data.type).subscribe({
       next: (categories) => {
         this.categories.set(categories);
         this.isLoading.set(false);
@@ -61,7 +80,7 @@ export class CategoryManagerDialog {
     }
 
     this.isSubmitting.set(true);
-    this.categoriesService.create({ name: this.nameControl.value.trim(), type: 'INVENTORY' }).subscribe({
+    this.categoriesService.create({ name: this.nameControl.value.trim(), type: this.data.type }).subscribe({
       next: (category) => {
         this.categories.update((list) => [...list, category].sort((a, b) => a.name.localeCompare(b.name)));
         this.nameControl.reset('');

@@ -70,7 +70,7 @@ export class ItemFormDialog implements OnInit {
 
   openCategoryManager(): void {
     this.dialog
-      .open(CategoryManagerDialog, { width: '440px' })
+      .open(CategoryManagerDialog, { width: '440px', data: { type: 'INVENTORY' } })
       .afterClosed()
       .subscribe((changed: boolean | undefined) => {
         if (changed) this.loadCategories();

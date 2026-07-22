@@ -21,6 +21,7 @@ import { ExpensesService } from '../../services/expenses.service';
 import { AccountsService } from '../../services/accounts.service';
 import { Account, CreateExpensePayload, Expense } from '../../interfaces/finance.interfaces';
 import { AccountManagerDialog } from '../account-manager-dialog/account-manager-dialog';
+import { CategoryManagerDialog } from '../../../inventory/components/category-manager-dialog/category-manager-dialog';
 
 export interface ExpenseFormDialogData {
   expense?: Expense;
@@ -101,10 +102,19 @@ export class ExpenseFormDialog implements OnInit {
 
   openAccountManager(): void {
     this.dialog
-      .open(AccountManagerDialog, { width: '560px' })
+      .open(AccountManagerDialog, { width: '620px' })
       .afterClosed()
       .subscribe((changed: boolean | undefined) => {
         if (changed) this.loadAccounts();
+      });
+  }
+
+  openCategoryManager(): void {
+    this.dialog
+      .open(CategoryManagerDialog, { width: '440px', data: { type: 'EXPENSE' } })
+      .afterClosed()
+      .subscribe((changed: boolean | undefined) => {
+        if (changed) this.loadCategories();
       });
   }
 
