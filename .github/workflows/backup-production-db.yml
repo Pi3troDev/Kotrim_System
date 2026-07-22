@@ -1,0 +1,33 @@
+name: Nightly production backup
+
+# Independent of Neon and Railway on purpose: this is the safety net for the
+# case those two are the thing that failed (a deleted project, a wrong
+# account action, an outage) — Neon's own 6h point-in-time-recovery does not
+# help if the whole project is gone, so this dump has to live somewhere else
+# entirely. GitHub Actions artifacts fit that: separate infra, separate
+# credentials, free at this volume.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 03:00 America/Sao_Paulo (fixed UTC-3, Brazil has no DST)
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    container:
+      image: postgres:17-alpine
+    steps:
+      - name: Dump production database
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          pg_dump --no-owner --no-privileges --format=custom \
+            --file="kotrim_prod_$(date +%Y-%m-%d).dump" "$DATABASE_URL"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotrim-prod-backup-${{ github.run_id }}
+          path: '*.dump'
+          retention-days: 90
