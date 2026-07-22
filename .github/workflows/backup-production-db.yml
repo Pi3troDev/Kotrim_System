@@ -16,7 +16,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     container:
-      image: postgres:17-alpine
+      image: postgres:18-alpine
     steps:
       - name: Dump production database
         env:
