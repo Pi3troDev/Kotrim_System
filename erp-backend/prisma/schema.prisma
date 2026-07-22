@@ -483,11 +483,11 @@ model Employee {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user            User?         @relation(fields: [userId], references: [id])
+  company         Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User?                 @relation(fields: [userId], references: [id])
   workOrders      WorkOrder[]
   payrollExpenses Expense[]
-  appointments    Appointment[]
+  appointments    AppointmentEmployee[]
 
   @@index([companyId])
   @@index([deletedAt])
@@ -798,7 +798,6 @@ model Payment {
 model Appointment {
   id             String            @id @default(uuid()) @db.Uuid
   companyId      String            @db.Uuid
-  employeeId     String            @db.Uuid
   clientId       String?           @db.Uuid
   vehicleId      String?           @db.Uuid
   workOrderId    String?           @db.Uuid
@@ -812,16 +811,32 @@ model Appointment {
   updatedAt      DateTime          @updatedAt
   deletedAt      DateTime?
 
-  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employee  Employee   @relation(fields: [employeeId], references: [id])
-  client    Client?    @relation(fields: [clientId], references: [id])
-  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id])
-  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
+  company   Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client    Client?               @relation(fields: [clientId], references: [id])
+  vehicle   Vehicle?              @relation(fields: [vehicleId], references: [id])
+  workOrder WorkOrder?            @relation(fields: [workOrderId], references: [id])
+  employees AppointmentEmployee[]
 
   @@index([companyId])
-  @@index([employeeId])
   @@index([scheduledStart])
   @@index([deletedAt])
+}
+
+/// Who is assigned to an appointment — many-to-many, so a job needing two
+/// mechanics (or a general meeting assigned to every active employee) is one
+/// appointment with several rows here, not several appointments.
+model AppointmentEmployee {
+  id            String   @id @default(uuid()) @db.Uuid
+  appointmentId String   @db.Uuid
+  employeeId    String   @db.Uuid
+  createdAt     DateTime @default(now())
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  employee    Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([appointmentId, employeeId])
+  @@index([appointmentId])
+  @@index([employeeId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────

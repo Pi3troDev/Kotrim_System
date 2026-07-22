@@ -1,10 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class CreateAppointmentDto {
-  @ApiProperty({ example: 'b3f5f7a0-...' })
-  @IsUUID()
-  employeeId: string;
+  @ApiProperty({
+    example: ['b3f5f7a0-...'],
+    description: 'Who this appointment is assigned to — one or more employees.',
+  })
+  @IsUUID('4', { each: true })
+  @ArrayMinSize(1)
+  @ArrayUnique()
+  employeeIds: string[];
 
   @ApiPropertyOptional({ example: 'b3f5f7a0-...' })
   @IsOptional()

@@ -16,6 +16,17 @@
       grid-column: span 1;
     }
   }
+
+  &__select-all {
+    margin-top: -8px;
+    display: flex;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
 }
 
 @media (max-width: 600px) {

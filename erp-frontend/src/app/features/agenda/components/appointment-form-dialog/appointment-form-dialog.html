@@ -10,17 +10,24 @@
       }
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="appointment-form__field">
-      <mat-label>Funcionário</mat-label>
-      <mat-select formControlName="employeeId">
+    <mat-form-field appearance="outline" class="appointment-form__field appointment-form__field--full">
+      <mat-label>Funcionários</mat-label>
+      <mat-select formControlName="employeeIds" multiple>
         @for (employee of employeeOptions(); track employee.id) {
           <mat-option [value]="employee.id">{{ employee.name }}</mat-option>
         }
       </mat-select>
-      @if (form.controls.employeeId.hasError('required') && form.controls.employeeId.touched) {
-        <mat-error>Selecione o funcionário responsável.</mat-error>
+      @if (form.controls.employeeIds.hasError('required') && form.controls.employeeIds.touched) {
+        <mat-error>Selecione ao menos um funcionário.</mat-error>
       }
     </mat-form-field>
+
+    <div class="appointment-form__field appointment-form__field--full appointment-form__select-all">
+      <button mat-button type="button" color="primary" (click)="selectAllEmployees()">
+        <mat-icon>groups</mat-icon>
+        Todos os funcionários ativos
+      </button>
+    </div>
 
     <mat-form-field appearance="outline" class="appointment-form__field">
       <mat-label>Cliente (opcional)</mat-label>

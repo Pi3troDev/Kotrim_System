@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, debounceTime, distinctUntilChanged, filter, switchMap, takeUntil, tap } from 'rxjs';
@@ -41,6 +42,7 @@ export interface AppointmentFormDialogData {
     MatAutocompleteModule,
     MatDatepickerModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './appointment-form-dialog.html',
@@ -78,7 +80,10 @@ export class AppointmentFormDialog implements OnInit, OnDestroy {
   );
 
   readonly form = this.fb.nonNullable.group({
-    employeeId: [this.data.appointment?.employeeId ?? '', Validators.required],
+    employeeIds: this.fb.nonNullable.control<string[]>(
+      this.data.appointment?.employees.map((employee) => employee.id) ?? [],
+      [Validators.required, Validators.minLength(1)],
+    ),
     vehicleId: [this.data.appointment?.vehicleId ?? ''],
     workOrderId: [this.data.appointment?.workOrderId ?? ''],
     title: [this.data.appointment?.title ?? '', [Validators.required, Validators.minLength(2)]],
@@ -163,7 +168,7 @@ export class AppointmentFormDialog implements OnInit, OnDestroy {
 
     this.isSubmitting.set(true);
     const basePayload: CreateAppointmentPayload = {
-      employeeId: raw.employeeId,
+      employeeIds: raw.employeeIds,
       clientId: this.selectedClientId() ?? undefined,
       vehicleId: raw.vehicleId || undefined,
       workOrderId: raw.workOrderId || undefined,
@@ -189,6 +194,11 @@ export class AppointmentFormDialog implements OnInit, OnDestroy {
 
   cancel(): void {
     this.dialogRef.close();
+  }
+
+  /** Snapshot, not a live rule: whoever is active right now gets assigned — someone hired later isn't retroactively added. */
+  selectAllEmployees(): void {
+    this.form.controls.employeeIds.setValue(this.employeeOptions().map((employee) => employee.id));
   }
 
   private loadVehiclesForClient(clientId: string): void {

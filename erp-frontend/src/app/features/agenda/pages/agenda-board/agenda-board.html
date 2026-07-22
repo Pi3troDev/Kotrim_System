@@ -84,8 +84,8 @@
         </ng-container>
 
         <ng-container matColumnDef="employee">
-          <th mat-header-cell *matHeaderCellDef>Funcionário</th>
-          <td mat-cell *matCellDef="let appointment">{{ appointment.employee.name }}</td>
+          <th mat-header-cell *matHeaderCellDef>Funcionários</th>
+          <td mat-cell *matCellDef="let appointment">{{ employeeNames(appointment) }}</td>
         </ng-container>
 
         <ng-container matColumnDef="linked">

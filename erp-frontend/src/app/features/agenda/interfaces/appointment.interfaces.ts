@@ -24,8 +24,7 @@ export interface AppointmentWorkOrderSummary {
 
 export interface Appointment {
   id: string;
-  employeeId: string;
-  employee: AppointmentEmployeeSummary;
+  employees: AppointmentEmployeeSummary[];
   clientId?: string | null;
   client?: AppointmentClientSummary | null;
   vehicleId?: string | null;
@@ -42,7 +41,16 @@ export interface Appointment {
   updatedAt: string;
 }
 
-export type CreateAppointmentPayload = Pick<Appointment, 'employeeId' | 'title' | 'scheduledStart' | 'scheduledEnd'> &
-  Partial<Pick<Appointment, 'clientId' | 'vehicleId' | 'workOrderId' | 'description' | 'notes'>>;
+export interface CreateAppointmentPayload {
+  employeeIds: string[];
+  title: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  clientId?: string;
+  vehicleId?: string;
+  workOrderId?: string;
+  description?: string;
+  notes?: string;
+}
 
 export type UpdateAppointmentPayload = Partial<CreateAppointmentPayload> & Partial<Pick<Appointment, 'status'>>;

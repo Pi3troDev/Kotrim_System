@@ -126,6 +126,10 @@ export class AgendaBoard implements OnInit, OnDestroy {
       });
   }
 
+  employeeNames(appointment: Appointment): string {
+    return appointment.employees.map((employee) => employee.name).join(', ');
+  }
+
   goToPreviousDay(): void {
     this.shiftDay(-1);
   }

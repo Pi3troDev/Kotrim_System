@@ -142,6 +142,16 @@ export class TeamMembersService {
       });
     });
 
+    // A login alone can't be "assigned" to anything company-wide (appointments,
+    // future payroll) — that needs the Employee side of the record too. Upsert
+    // on the unique userId so this covers a revived user's already-existing
+    // Employee row the same way it covers a brand-new one.
+    await this.prisma.employee.upsert({
+      where: { userId: user.id },
+      update: { name: dto.name, position: CARGO_LABELS[dto.cargo], isActive: true, deletedAt: null },
+      create: { companyId, userId: user.id, name: dto.name, position: CARGO_LABELS[dto.cargo], isActive: true },
+    });
+
     const { token } = await this.passwordTokenService.issue(user.id, PasswordTokenPurpose.SETUP);
 
     this.mailService.teamInvite(
@@ -206,6 +216,12 @@ export class TeamMembersService {
       include: { role: { select: { name: true, isSystem: true } } },
     });
 
+    if (dto.isActive !== undefined) {
+      // A deactivated login must also stop showing up in "active employee"
+      // pickers (appointments, work orders) — mirrors the same isActive flag.
+      await this.prisma.employee.updateMany({ where: { userId }, data: { isActive: dto.isActive } });
+    }
+
     this.auditService.record({
       action: AuditAction.UPDATE,
       entity: 'User',
@@ -269,6 +285,11 @@ export class TeamMembersService {
       this.prisma.passwordToken.updateMany({
         where: { userId, usedAt: null },
         data: { usedAt: new Date() },
+      }),
+      // No-op if this login predates the Employee link being introduced.
+      this.prisma.employee.updateMany({
+        where: { userId },
+        data: { isActive: false, deletedAt: new Date() },
       }),
     ]);
 

@@ -24,13 +24,13 @@ export class AppointmentsController {
   @Get()
   @ApiOperation({ summary: 'List appointments (paginated, filterable by date range/employee/status)' })
   findAll(@CurrentUser() user: AuthenticatedUser, @Query() query: QueryAppointmentsDto) {
-    return this.appointmentsService.findAll(user.companyId, query);
+    return this.appointmentsService.findAll(user.companyId, query, user);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get an appointment by id' })
   findOne(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.appointmentsService.findOne(user.companyId, id);
+    return this.appointmentsService.findOne(user.companyId, id, user);
   }
 
   @Patch(':id')
