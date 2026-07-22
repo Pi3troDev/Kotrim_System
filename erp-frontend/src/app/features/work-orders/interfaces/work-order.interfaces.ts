@@ -18,6 +18,7 @@ export interface WorkOrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  inventoryItemId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -85,6 +86,7 @@ export interface CreateWorkOrderItemPayload {
   description: string;
   quantity: number;
   unitPrice: number;
+  inventoryItemId?: string;
 }
 
 export type UpdateWorkOrderItemPayload = Partial<CreateWorkOrderItemPayload>;

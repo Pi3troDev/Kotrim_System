@@ -22,6 +22,12 @@
     color: var(--text-primary);
     text-align: right;
   }
+
+  &__linked-hint {
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+  }
 }
 
 @media (max-width: 600px) {

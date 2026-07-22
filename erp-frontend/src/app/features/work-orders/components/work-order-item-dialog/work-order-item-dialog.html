@@ -10,6 +10,26 @@
       </mat-select>
     </mat-form-field>
 
+    @if (isPart() && !isEditMode) {
+      <mat-form-field appearance="outline" class="item-form__field">
+        <mat-label>Vincular ao estoque (opcional)</mat-label>
+        <mat-select
+          formControlName="inventoryItemId"
+          (selectionChange)="onInventoryItemSelected($event.value)"
+        >
+          <mat-option [value]="null">Não vincular</mat-option>
+          @for (item of inventoryItems(); track item.id) {
+            <mat-option [value]="item.id">{{ item.name }} ({{ item.quantityInStock }} {{ item.unit }} em estoque)</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Vincular desconta a quantidade do estoque automaticamente.</mat-hint>
+      </mat-form-field>
+    } @else if (linkedInventoryItemName(); as name) {
+      <p class="item-form__linked-hint">
+        Vinculado ao estoque: <strong>{{ name }}</strong> — a quantidade aqui também ajusta o estoque.
+      </p>
+    }
+
     <mat-form-field appearance="outline" class="item-form__field">
       <mat-label>Descrição</mat-label>
       <input matInput formControlName="description" />
