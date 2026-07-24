@@ -86,6 +86,10 @@ export class WorkOrdersService {
             }
           }
 
+          // Receivable shows up in Finance right away — the shop is paid before/at delivery far more often than after,
+          // so waiting for COMPLETED to create it just hid money that's already expected. Payment is still a manual step.
+          await this.ensureIncomeForWorkOrder(tx, companyId, workOrder, workOrder.openedAt);
+
           return workOrder;
         });
         return this.serialize(created);
@@ -159,7 +163,13 @@ export class WorkOrdersService {
       data.totalAmount = round2(Number(existing.laborAmount) + Number(existing.partsAmount) - dto.discountAmount);
     }
 
-    const updated = await this.prisma.workOrder.update({ where: { id }, data, ...workOrderInclude });
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const workOrder = await tx.workOrder.update({ where: { id }, data, ...workOrderInclude });
+      if (dto.discountAmount !== undefined) {
+        await this.syncIncomeAmount(tx, companyId, id, Number(workOrder.totalAmount));
+      }
+      return workOrder;
+    });
     return this.serialize(updated);
   }
 
@@ -209,6 +219,8 @@ export class WorkOrdersService {
       });
 
       if (dto.status === WorkOrderStatus.COMPLETED || dto.status === WorkOrderStatus.DELIVERED) {
+        // Safety net for work orders opened before the income-at-open behavior shipped — ensureIncomeForWorkOrder
+        // is a no-op if one already exists, so this never creates a second Income for normal (post-change) work orders.
         await this.ensureIncomeForWorkOrder(tx, companyId, workOrder, completedAtValue ?? now);
       }
 
@@ -350,17 +362,23 @@ export class WorkOrdersService {
     );
     const totalAmount = round2(laborAmount + partsAmount - Number(workOrder.discountAmount));
 
-    // Keep a linked-but-unpaid Income in sync with the WO total; once payment has started, its total is locked.
-    const linkedIncome = await this.prisma.income.findFirst({
-      where: { workOrderId, companyId: workOrder.companyId, deletedAt: null },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.workOrder.update({ where: { id: workOrderId }, data: { laborAmount, partsAmount, totalAmount } });
+      await this.syncIncomeAmount(tx, workOrder.companyId, workOrderId, totalAmount);
     });
-    const shouldSyncIncome =
-      linkedIncome && Number(linkedIncome.paidAmount) === 0 && Number(linkedIncome.amount) !== totalAmount;
+  }
 
-    await this.prisma.$transaction([
-      this.prisma.workOrder.update({ where: { id: workOrderId }, data: { laborAmount, partsAmount, totalAmount } }),
-      ...(shouldSyncIncome ? [this.prisma.income.update({ where: { id: linkedIncome!.id }, data: { amount: totalAmount } })] : []),
-    ]);
+  /** Keeps a linked-but-unpaid Income's amount mirrored to the WO total; once payment has started, its total is locked. */
+  private async syncIncomeAmount(
+    tx: Prisma.TransactionClient,
+    companyId: string,
+    workOrderId: string,
+    totalAmount: number,
+  ): Promise<void> {
+    const linkedIncome = await tx.income.findFirst({ where: { workOrderId, companyId, deletedAt: null } });
+    if (linkedIncome && Number(linkedIncome.paidAmount) === 0 && Number(linkedIncome.amount) !== totalAmount) {
+      await tx.income.update({ where: { id: linkedIncome.id }, data: { amount: totalAmount } });
+    }
   }
 
   /** Idempotent — if an active Income is already linked to this work order, does nothing (prevents duplicates). */

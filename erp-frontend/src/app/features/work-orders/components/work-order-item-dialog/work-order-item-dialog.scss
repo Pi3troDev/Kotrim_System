@@ -7,6 +7,12 @@
 
   &__field {
     width: 100%;
+
+    // mat-hint below this select tends to wrap to 2 lines; Material's subscript area
+    // reserves height for one, so without this the wrapped line overlaps the field below.
+    &--with-hint {
+      margin-bottom: 18px;
+    }
   }
 
   &__row {

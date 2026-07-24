@@ -11,7 +11,7 @@
     </mat-form-field>
 
     @if (isPart() && !isEditMode) {
-      <mat-form-field appearance="outline" class="item-form__field">
+      <mat-form-field appearance="outline" class="item-form__field item-form__field--with-hint">
         <mat-label>Vincular ao estoque (opcional)</mat-label>
         <mat-select
           formControlName="inventoryItemId"
