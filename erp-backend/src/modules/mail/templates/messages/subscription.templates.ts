@@ -48,6 +48,11 @@ export const orderPendingTemplate: TemplateRenderers<MailTemplateKey.ORDER_PENDI
         ]) +
         copyValue('Chave Pix', ctx.pixKey) +
         alert(
+          'info',
+          '<strong>Garantia de 7 dias.</strong> Até 7 dias corridos após a confirmação do pagamento, você pode ' +
+            'pedir o estorno total, sem precisar justificar.',
+        ) +
+        alert(
           'warning',
           '<strong>O acesso ainda não está liberado.</strong> Assim que confirmarmos o pagamento, você recebe ' +
             'um e-mail avisando e já pode entrar.',
@@ -59,6 +64,8 @@ export const orderPendingTemplate: TemplateRenderers<MailTemplateKey.ORDER_PENDI
         `1. Faça um Pix de ${amount} para a chave: ${ctx.pixKey}\n` +
         `2. Envie o comprovante pelo WhatsApp: ${ctx.supportContact}\n` +
         `3. Confirmamos o pagamento e liberamos seu acesso.\n\n` +
+        `Garantia de 7 dias: até 7 dias corridos após a confirmação do pagamento, você pode pedir o estorno ` +
+        `total, sem precisar justificar.\n\n` +
         `O acesso ainda não está liberado. Avisamos por e-mail assim que confirmarmos.\n\n` +
         `Acompanhe: ${ctx.appUrl}/subscription\n`,
     };

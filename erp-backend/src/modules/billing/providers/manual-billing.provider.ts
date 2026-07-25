@@ -96,6 +96,9 @@ export class ManualBillingProvider implements BillingProviderAdapter {
       steps.push(`Envie o comprovante para: ${contact}`);
     }
 
+    steps.push(
+      'Garantia: até 7 dias corridos após a confirmação do pagamento você pode pedir o estorno total, sem precisar justificar.',
+    );
     steps.push('Assim que o pagamento for confirmado, sua assinatura será ativada e o acesso liberado.');
 
     return steps;
