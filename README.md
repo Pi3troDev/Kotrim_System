@@ -236,3 +236,4 @@ técnicos, para transparência:
 Conforme combinado, a próxima etapa é o desenvolvimento dos módulos de negócio,
 um de cada vez, começando pelo **Dashboard** — aguardando sua confirmação para
 iniciar.
+
